@@ -75,7 +75,10 @@ group :test do
 end
 
 gem 'devise', '~> 4.9'
+gem 'devise-api', '~> 0.1.3'
+
 gem 'faker'
 gem 'foreman', '~> 0.87.2'
 gem 'rack-cors'
 gem 'tailwindcss-rails', '~> 2.0'
+
