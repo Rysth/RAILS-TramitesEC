@@ -16,14 +16,14 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: localhost
-  username: john
-  password: 12345
-  port: 5433
 
 development:
   <<: *default
   database: rails_tramitesec_development
+  host: localhost
+  username: john
+  password: 12345
+  port: 5433
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -81,6 +81,4 @@ test:
 #
 production:
   <<: *default
-  database: rails_tramitesec_production
-  username: rails_tramitesec
-  password: <%= ENV["rails_tramitesec_DATABASE_PASSWORD"] %>
+  password: <%= ENV["DATABASE_URL"] %>
