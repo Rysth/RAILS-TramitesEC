@@ -1,4 +1,4 @@
-class Api::V1::Users::TokensController < Devise::Api::TokensController
+class Api::V1::Users::TokensController < Devise::Api::TokensController # rubocop:disable Naming/FileName
   private
 
   def sign_up_params

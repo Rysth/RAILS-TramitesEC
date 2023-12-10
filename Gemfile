@@ -81,4 +81,3 @@ gem 'faker'
 gem 'foreman', '~> 0.87.2'
 gem 'rack-cors'
 gem 'tailwindcss-rails', '~> 2.0'
-
