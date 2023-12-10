@@ -75,7 +75,7 @@ group :test do
 end
 
 gem 'devise', '~> 4.9'
-gem 'devise-api', '~> 0.1.3'
+gem 'devise-api', github: 'nejdetkadir/devise-api', branch: 'main'
 
 gem 'faker'
 gem 'foreman', '~> 0.87.2'

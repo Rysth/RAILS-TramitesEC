@@ -1,3 +1,16 @@
+GIT
+  remote: https://github.com/nejdetkadir/devise-api.git
+  revision: 7995136f931163c4620f7686c139958090fa8e92
+  branch: main
+  specs:
+    devise-api (0.1.3)
+      devise (>= 4.7.2)
+      dry-configurable (~> 1.0, >= 1.0.1)
+      dry-initializer (>= 3.1.1)
+      dry-monads (>= 1.6.0)
+      dry-types (>= 1.7.0)
+      rails (>= 6.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -109,13 +122,6 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    devise-api (0.1.3)
-      devise (>= 4.7.2)
-      dry-configurable (~> 1.0, >= 1.0.1)
-      dry-initializer (>= 3.1.1)
-      dry-monads (>= 1.6.0)
-      dry-types (>= 1.7.0)
-      rails (>= 6.0.0)
     diff-lcs (1.5.0)
     drb (2.1.1)
       ruby2_keywords
@@ -344,7 +350,7 @@ DEPENDENCIES
   capybara
   debug
   devise (~> 4.9)
-  devise-api (~> 0.1.3)
+  devise-api!
   faker
   foreman (~> 0.87.2)
   importmap-rails
