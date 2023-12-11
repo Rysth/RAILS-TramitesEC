@@ -9,3 +9,5 @@
 #   end
 
 User.create(username: "John Palacios", email: "admin@test.com", password: "123456")
+User.create(username: "Ericka Briones", email: "ericka.b@test.com", password: "123456")
+User.create(username: "William Briones", email: "william.b@test.com", password: "123456")
