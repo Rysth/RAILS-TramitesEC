@@ -15,12 +15,13 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_12_211126) do
   enable_extension "plpgsql"
 
   create_table "clientes", force: :cascade do |t|
-    t.string "cedula"
-    t.string "nombres"
-    t.string "apellidos"
-    t.string "direccion"
-    t.string "email"
-    t.boolean "active"
+    t.string "cedula", null: false
+    t.string "nombres", null: false
+    t.string "apellidos", null: false
+    t.string "celular", null: false
+    t.string "direccion", null: false
+    t.string "email", null: false
+    t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"

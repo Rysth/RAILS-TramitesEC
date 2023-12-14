@@ -1,4 +1,4 @@
-class Api::V1::UsersController < ApplicationController # rubocop:disable Naming/FileName
+class Api::V1::UsersController < ApplicationController
   before_action :authenticate_devise_api_token!
 
   def show
