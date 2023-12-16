@@ -1,11 +1,11 @@
 # Seed Users
-# User.create(username: "John Palacios", email: "admin@test.com", password: "123456")
-# User.create(username: "Ericka Briones", email: "ericka.b@test.com", password: "123456")
-# User.create(username: "William Briones", email: "william.b@test.com", password: "123456")
-# User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456")
+User.create(username: "John Palacios", email: "admin@test.com", password: "123456")
+User.create(username: "Ericka Briones", email: "ericka.b@test.com", password: "123456")
+User.create(username: "William Briones", email: "william.b@test.com", password: "123456")
+User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456")
 
 # Seed Clientes with Faker data
-1000.times do
+5.times do
   Cliente.create(
     cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
