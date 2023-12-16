@@ -3,10 +3,7 @@ class Api::V1::ClientesController < ApplicationController
   before_action :set_cliente, only: %i[show update destroy]
 
   def index
-    render json: {
-      customers: all_clientes,
-      stats: calculate_statistics
-    }, status: :ok
+    render_clients_response
   end
 
   def show
@@ -17,10 +14,7 @@ class Api::V1::ClientesController < ApplicationController
     @cliente = Cliente.new(cliente_params)
 
     if @cliente.save
-      render json: {
-        customers: all_clientes,
-        stats: calculate_statistics
-      }, status: :ok
+      render_clients_response
     else
       render json: @cliente.errors, status: :unprocessable_entity
     end
@@ -28,10 +22,7 @@ class Api::V1::ClientesController < ApplicationController
 
   def update
     if @cliente.update(cliente_params)
-      render json: {
-        customers: all_clientes,
-        stats: calculate_statistics
-      }, status: :ok
+      render_clients_response
     else
       render json: @cliente.errors, status: :unprocessable_entity
     end
@@ -39,16 +30,20 @@ class Api::V1::ClientesController < ApplicationController
 
   def destroy
     if @cliente.destroy
-      render json: {
-        customers: all_clientes,
-        stats: calculate_statistics
-      }, status: :ok
+      render_clients_response
     else
       render json: @cliente.errors, status: :unprocessable_entity
     end
   end
 
-  private 
+  private
+
+  def render_clients_response
+    render json: {
+      customers: all_clients,
+      stats: calculate_statistics
+    }, status: :ok
+  end
 
   def calculate_statistics
     customers_quantity = Cliente.count
@@ -62,7 +57,7 @@ class Api::V1::ClientesController < ApplicationController
     }
   end
 
-  def all_clientes
+  def all_clients
     Cliente.all.order(created_at: :asc)
   end
 
