@@ -10,11 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_20_141659) do
+ActiveRecord::Schema[7.1].define(version: 2023_12_12_211126) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "clientes", force: :cascade do |t|
+  create_table "customers", force: :cascade do |t|
     t.string "cedula", null: false
     t.string "nombres", null: false
     t.string "apellidos", null: false
@@ -25,9 +25,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_20_141659) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
-    t.bigint "role_id"
-    t.index ["role_id"], name: "index_clientes_on_role_id"
-    t.index ["user_id"], name: "index_clientes_on_user_id"
+    t.index ["user_id"], name: "index_customers_on_user_id"
   end
 
   create_table "devise_api_tokens", force: :cascade do |t|
@@ -46,14 +44,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_20_141659) do
     t.index ["resource_owner_type", "resource_owner_id"], name: "index_devise_api_tokens_on_resource_owner"
   end
 
-  create_table "roles", force: :cascade do |t|
-    t.string "nombre", null: false
-    t.string "slug", null: false
-    t.boolean "active", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "email", default: "", null: false
@@ -67,6 +57,5 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_20_141659) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
-  add_foreign_key "clientes", "roles"
-  add_foreign_key "clientes", "users"
+  add_foreign_key "customers", "users"
 end
