@@ -46,7 +46,7 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def render_processors_response
     render json: {
-      processors: all_processors,
+      processors: all_processors.as_json(include: { user: { only: %i[id username] } }),
       stats: calculate_statistics
     }, status: :ok
   end
@@ -64,7 +64,7 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def all_processors
-    Processor.all.order(created_at: :asc)
+    Processor.includes(:user).order(created_at: :asc)
   end
 
   def set_processor
