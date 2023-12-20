@@ -4,14 +4,21 @@ User.create(username: "Ericka Briones", email: "ericka.b@test.com", password: "1
 User.create(username: "William Briones", email: "william.b@test.com", password: "123456")
 User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456")
 
-# Seed Roles
-Role.create(nombre: "Administrator", slug: "admin")
-Role.create(nombre: "Trámitador", slug: "processor")
-Role.create(nombre: "Cliente", slug: "customer")
+# Seed Processors with Faker data
+5.times do
+  Processor.create(
+    cedula: Faker::IDNumber.unique.spanish_citizen_number,
+    nombres: Faker::Name.first_name,
+    apellidos: Faker::Name.last_name,
+    celular: Faker::PhoneNumber.cell_phone,
+    active: Faker::Boolean.boolean(true_ratio: 0.8),
+    user_id: User.ids.sample
+  )
+end
 
 # Seed Clientes with Faker data
 5.times do
-  Cliente.create(
+  Customer.create(
     cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
     apellidos: Faker::Name.last_name,
@@ -19,7 +26,6 @@ Role.create(nombre: "Cliente", slug: "customer")
     direccion: Faker::Address.street_address,
     email: Faker::Internet.email,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    user_id: User.ids.sample,
-    role_id: Role.ids.sample
+    processor_id: Processor.ids.sample
   )
 end

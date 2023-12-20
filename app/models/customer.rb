@@ -1,4 +1,6 @@
-class Cliente < ApplicationRecord
+class Customer < ApplicationRecord
+  belongs_to :processor
+
   validates :cedula, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 10 }
   validates :nombres, presence: true
   validates :apellidos, presence: true
