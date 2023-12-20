@@ -1,4 +1,5 @@
 class Processor < ApplicationRecord
+  belongs_to :user
   has_many :customers
 
   validates :cedula, presence: true, uniqueness: { case_sensitive: false }

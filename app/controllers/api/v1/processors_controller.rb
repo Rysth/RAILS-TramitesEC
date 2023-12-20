@@ -29,6 +29,8 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def destroy
+    return render json: @processor.errors, status: :conflict if customers?
+
     if @processor.destroy
       render_processors_response
     else
@@ -37,6 +39,10 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   private
+
+  def customers?
+    @processor.customers.exists?
+  end
 
   def render_processors_response
     render json: {
@@ -66,6 +72,6 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def processor_params
-    params.require(:procesor).permit(:cedula, :nombres, :apellidos, :celular, :active)
+    params.require(:processor).permit(:cedula, :nombres, :apellidos, :celular, :active, :user_id)
   end
 end
