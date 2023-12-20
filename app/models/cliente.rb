@@ -8,6 +8,7 @@ class Cliente < ApplicationRecord
   validates :celular, presence: true
   validates :direccion, presence: true
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[^@\s]+@[^@\s]+\z/ }
+  validates :active, inclusion: { in: [true, false] }
 
   # Custom validation for user presence
   validate :user_presence
