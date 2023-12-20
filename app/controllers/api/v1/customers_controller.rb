@@ -40,7 +40,7 @@ class Api::V1::CustomersController < ApplicationController
 
   def render_customers_response
     render json: {
-      customers: all_customers,
+      customers: all_customers.as_json(include: { processor: { only: %i[id nombres apellidos] } }),
       stats: calculate_statistics
     }, status: :ok
   end
@@ -58,7 +58,7 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def all_customers
-    Customer.all.order(created_at: :asc)
+    Customer.includes(:processor).order(created_at: :asc)
   end
 
   def set_customer
