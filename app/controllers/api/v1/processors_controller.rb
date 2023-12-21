@@ -53,13 +53,13 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def calculate_statistics
     processors_quantity = Processor.count
-    processors_active = Processor.where(active: true).count
-    processors_inactive = processors_quantity - processors_active
+    processors_added_last_month = Processor.where('created_at >= ?', 1.month.ago).count
+    processors_added_last_7_days = Processor.where('created_at >= ?', 7.days.ago).count
 
     {
       processors_quantity:,
-      processors_active:,
-      processors_inactive:
+      processors_added_last_month:,
+      processors_added_last_7_days:
     }
   end
 
