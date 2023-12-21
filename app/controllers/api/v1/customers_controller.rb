@@ -40,7 +40,7 @@ class Api::V1::CustomersController < ApplicationController
 
   def render_customers_response
     render json: {
-      customers: all_customers.as_json(include: { processor: { only: %i[id nombres apellidos], include: { user: { only: %i[id username] }} } }),
+      customers: all_customers.as_json(include: { processor: { only: %i[id nombres apellidos], include: { user: { only: %i[id username] } } } }),
       stats: calculate_statistics
     }, status: :ok
   end
@@ -66,6 +66,6 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def customer_params
-    params.require(:customer).permit(:cedula, :nombres, :apellidos, :celular, :direccion, :email, :active, :processor_id)
+    params.require(:customer).permit(:id, :cedula, :nombres, :apellidos, :celular, :direccion, :email, :active, :processor_id)
   end
 end
