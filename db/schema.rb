@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_10_210404) do
+ActiveRecord::Schema[7.1].define(version: 2023_12_20_145809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "customers", force: :cascade do |t|
+    t.string "cedula", null: false
+    t.string "nombres", null: false
+    t.string "apellidos", null: false
+    t.string "celular", null: false
+    t.string "direccion", null: false
+    t.string "email", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "processor_id"
+    t.index ["processor_id"], name: "index_customers_on_processor_id"
+  end
 
   create_table "devise_api_tokens", force: :cascade do |t|
     t.string "resource_owner_type", null: false
@@ -30,6 +44,18 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_10_210404) do
     t.index ["resource_owner_type", "resource_owner_id"], name: "index_devise_api_tokens_on_resource_owner"
   end
 
+  create_table "processors", force: :cascade do |t|
+    t.string "cedula", null: false
+    t.string "nombres", null: false
+    t.string "apellidos", null: false
+    t.string "celular", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_processors_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "email", default: "", null: false
@@ -43,4 +69,6 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_10_210404) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "customers", "processors"
+  add_foreign_key "processors", "users"
 end
