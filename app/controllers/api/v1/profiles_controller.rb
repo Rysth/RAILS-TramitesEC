@@ -20,15 +20,11 @@ class Api::V1::ProfilesController < ApplicationController
       processors_data = processors.where(created_at: month_start..month_end)
       quantity_and_months << {
         Meses: month_start.strftime('%B %Y'),
-        Trámitadores: processors_data.count,
-        Clientes: calculate_customers_count(processors_data)
+        Tramitadores: processors_data.count,
+        Clientes: processors_data.sum(&:customers_count)
       }
     end
 
     quantity_and_months
-  end
-
-  def calculate_customers_count(processors_data)
-    processors_data.includes(:customers).sum { |processor| processor.customers.count }
   end
 end
