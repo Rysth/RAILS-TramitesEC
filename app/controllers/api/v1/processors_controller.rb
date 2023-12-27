@@ -6,33 +6,9 @@ class Api::V1::ProcessorsController < ApplicationController
     render_processors_response
   end
 
+  # Extract this method for Profile
   def show
-    @user_processors = current_devise_api_user.processors
-    quantity_and_months = calculate_quantity_and_months(@user_processors)
-
-    render json: quantity_and_months, status: :ok
-  end
-
-  def calculate_quantity_and_months(processors)
-    quantity_and_months = []
-
-    (0..5).reverse_each do |i|
-      month_start = i.months.ago.beginning_of_month
-      month_end = i.months.ago.end_of_month
-
-      processors_data = processors.where(created_at: month_start..month_end)
-      quantity_and_months << {
-        Meses: month_start.strftime('%B %Y'),
-        Trámitadores: processors_data.count,
-        Clientes: calculate_customers_count(processors_data)
-      }
-    end
-
-    quantity_and_months
-  end
-
-  def calculate_customers_count(processors_data)
-    processors_data.sum { |processor| processor.customers.count }
+    render_processors_response
   end
 
   def create
