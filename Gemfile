@@ -83,3 +83,5 @@ gem 'rack-cors'
 gem 'tailwindcss-rails', '~> 2.0'
 
 gem "will_paginate", "~> 4.0"
+
+gem "kaminari", "~> 1.2"
