@@ -46,9 +46,21 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def render_processors_response
     render json: {
-      processors: all_processors.as_json(include: { user: { only: %i[id username] } }),
+      processors: all_processors.map do |processor|
+        {
+          id: processor.id,
+          cedula: processor.cedula,
+          nombres: processor.nombres,
+          apellidos: processor.apellidos,
+          celular: processor.celular,
+          user: {
+            id: processor.user&.id,
+            username: processor.user&.username
+          }
+        }
+      end,
       stats: calculate_statistics
-    }, status: :ok
+    }.to_json, status: :ok
   end
 
   def calculate_statistics
