@@ -1,9 +1,9 @@
-class Api::V1::ProfileController < ApplicationController
+class Api::V1::ProfilesController < ApplicationController
   before_action :authenticate_devise_api_token!
 
-  def index
-    @user_processors = current_devise_api_user.processors
-    quantity_and_months = calculate_quantity_and_months(@user_processors)
+  def show
+    @user_profile = current_devise_api_user
+    quantity_and_months = calculate_quantity_and_months(@user_profile.processors)
 
     render json: quantity_and_months, status: :ok
   end
@@ -31,5 +31,4 @@ class Api::V1::ProfileController < ApplicationController
   def calculate_customers_count(processors_data)
     processors_data.includes(:customers).sum { |processor| processor.customers.count }
   end
-
 end
