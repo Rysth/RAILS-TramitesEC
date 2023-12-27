@@ -5,7 +5,7 @@ User.create(username: "William Briones", email: "william.b@test.com", password: 
 User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456")
 
 # Seed Processors with Faker data
-10.times do
+100.times do
   Processor.create(
     cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
@@ -17,7 +17,7 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
 end
 
 # Seed Clientes with Faker data
-10.times do
+1000.times do
   Customer.create(
     cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
