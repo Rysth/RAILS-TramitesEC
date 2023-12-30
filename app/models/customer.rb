@@ -1,5 +1,5 @@
 class Customer < ApplicationRecord
-  belongs_to :processor
+  belongs_to :processor, counter_cache: true
 
   validates :cedula, presence: true, uniqueness: { case_sensitive: false }
   validates :nombres, presence: true

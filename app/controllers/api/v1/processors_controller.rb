@@ -6,8 +6,9 @@ class Api::V1::ProcessorsController < ApplicationController
     render_processors_response
   end
 
+  # Extract this method for Profile
   def show
-    render json: @processor
+    render_processors_response
   end
 
   def create
@@ -29,7 +30,24 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def destroy
-    return render json: @processor.errors, status: :conflict if customers?
+    if customers?
+      return render json: {
+        processors: all_processors.map do |processor|
+          {
+            id: processor.id,
+            cedula: processor.cedula,
+            nombres: processor.nombres,
+            apellidos: processor.apellidos,
+            celular: processor.celular,
+            user: {
+              id: processor.user&.id,
+              username: processor.user&.username
+            }
+          }
+        end,
+        stats: calculate_statistics
+      }.to_json, status: :conflict
+    end
 
     if @processor.destroy
       render_processors_response
@@ -46,20 +64,28 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def render_processors_response
     render json: {
-      processors: all_processors.as_json(include: { user: { only: %i[id username] } }),
+      processors: all_processors.map do |processor|
+        {
+          id: processor.id,
+          cedula: processor.cedula,
+          nombres: processor.nombres,
+          apellidos: processor.apellidos,
+          celular: processor.celular,
+          user: {
+            id: processor.user&.id,
+            username: processor.user&.username
+          }
+        }
+      end,
       stats: calculate_statistics
-    }, status: :ok
+    }.to_json, status: :ok
   end
 
   def calculate_statistics
-    processors_quantity = Processor.count
-    processors_active = Processor.where(active: true).count
-    processors_inactive = processors_quantity - processors_active
-
     {
-      processors_quantity:,
-      processors_active:,
-      processors_inactive:
+      processors_quantity: Processor.count,
+      processors_added_last_month: Processor.where('created_at >= ?', 1.month.ago).count,
+      processors_added_last_7_days: Processor.where('created_at >= ?', 7.days.ago).count
     }
   end
 
