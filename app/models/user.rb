@@ -5,4 +5,5 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable, :api
 
   has_many :processors, strict_loading: true
+  has_many :procedures
 end

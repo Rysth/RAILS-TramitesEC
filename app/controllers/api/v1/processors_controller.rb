@@ -78,7 +78,7 @@ class Api::V1::ProcessorsController < ApplicationController
         }
       end,
       stats: calculate_statistics
-    }.to_json, status: :ok
+    }, status: :ok
   end
 
   def calculate_statistics

@@ -12,6 +12,7 @@ class CreateProcedures < ActiveRecord::Migration[7.1]
       t.timestamps
     end
     
+    add_reference :procedures, :user, foreign_key: true
     add_reference :procedures, :processor, foreign_key: true
     add_reference :procedures, :customer, foreign_key: true
     add_reference :procedures, :license, foreign_key: true

@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       resources :users, only: [:index, :show]  
       resources :processors
       resources :customers
+      resources :procedures
     end
   end
 end

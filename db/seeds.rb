@@ -66,6 +66,7 @@ Status.create(nombre: "ENTREGADO POR EL PROVEEDOR")
     observaciones: Faker::Lorem.sentence,
     processor_id: Processor.ids.sample,
     customer_id: Customer.ids.sample,
+    user_id: User.ids.sample,
     license_id: License.ids.sample,
     status_id: Status.ids.sample
   )

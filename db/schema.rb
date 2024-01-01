@@ -64,6 +64,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
     t.string "observaciones"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.bigint "processor_id"
     t.bigint "customer_id"
     t.bigint "license_id"
@@ -72,6 +73,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
     t.index ["license_id"], name: "index_procedures_on_license_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["user_id"], name: "index_procedures_on_user_id"
   end
 
   create_table "processors", force: :cascade do |t|
@@ -120,5 +122,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   add_foreign_key "procedures", "licenses"
   add_foreign_key "procedures", "processors"
   add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
 end

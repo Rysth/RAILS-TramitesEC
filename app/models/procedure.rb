@@ -1,6 +1,7 @@
 class Procedure < ApplicationRecord
   belongs_to :processor
   belongs_to :customer
+  belongs_to :user
   belongs_to :license
   belongs_to :status
 
@@ -11,5 +12,5 @@ class Procedure < ApplicationRecord
   validates :ganancia, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :ganancia_pendiente, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
-  validates :processor, :customer, :license, :status, presence: true
+  validates :processor, :customer, :user, :license, :status, presence: true
 end
