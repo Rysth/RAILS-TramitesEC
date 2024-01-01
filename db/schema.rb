@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_01_01_180821) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -51,6 +51,27 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_180821) do
     t.datetime "updated_at", null: false
     t.bigint "type_id"
     t.index ["type_id"], name: "index_licenses_on_type_id"
+  end
+
+  create_table "procedures", force: :cascade do |t|
+    t.string "codigo"
+    t.date "fecha"
+    t.string "placa"
+    t.float "valor"
+    t.float "valor_pendiente"
+    t.float "ganancia"
+    t.float "ganancia_pendiente"
+    t.string "observaciones"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "processor_id"
+    t.bigint "customer_id"
+    t.bigint "license_id"
+    t.bigint "status_id"
+    t.index ["customer_id"], name: "index_procedures_on_customer_id"
+    t.index ["license_id"], name: "index_procedures_on_license_id"
+    t.index ["processor_id"], name: "index_procedures_on_processor_id"
+    t.index ["status_id"], name: "index_procedures_on_status_id"
   end
 
   create_table "processors", force: :cascade do |t|
@@ -95,5 +116,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_180821) do
 
   add_foreign_key "customers", "processors"
   add_foreign_key "licenses", "types"
+  add_foreign_key "procedures", "customers"
+  add_foreign_key "procedures", "licenses"
+  add_foreign_key "procedures", "processors"
+  add_foreign_key "procedures", "statuses"
   add_foreign_key "processors", "users"
 end
