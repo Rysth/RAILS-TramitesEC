@@ -1,4 +1,3 @@
-class License < ApplicationRecord
-  belongs_to :type
+class Status < ApplicationRecord
   validates :nombre, presence: true, uniqueness: { case_sensitive: true }
 end
