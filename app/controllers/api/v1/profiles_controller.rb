@@ -17,11 +17,13 @@ class Api::V1::ProfilesController < ApplicationController
       month_start = i.months.ago.beginning_of_month
       month_end = i.months.ago.end_of_month
 
+      procedures_data = @user_profile.procedures.where(created_at: month_start..month_end)
       processors_data = processors.where(created_at: month_start..month_end)
       quantity_and_months << {
         Meses: month_start.strftime('%B %Y'),
         Tramitadores: processors_data.count,
-        Clientes: processors_data.sum(&:customers_count)
+        Clientes: processors_data.sum(&:customers_count),
+        Tramites: procedures_data.count
       }
     end
 
