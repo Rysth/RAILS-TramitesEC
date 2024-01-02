@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_12_27_213234) do
+ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -44,6 +44,40 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_27_213234) do
     t.index ["resource_owner_type", "resource_owner_id"], name: "index_devise_api_tokens_on_resource_owner"
   end
 
+  create_table "licenses", force: :cascade do |t|
+    t.string "nombre"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "type_id"
+    t.index ["type_id"], name: "index_licenses_on_type_id"
+  end
+
+  create_table "procedures", force: :cascade do |t|
+    t.string "codigo"
+    t.date "fecha"
+    t.string "placa"
+    t.float "valor"
+    t.float "valor_pendiente"
+    t.float "ganancia"
+    t.float "ganancia_pendiente"
+    t.string "observaciones"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.bigint "processor_id"
+    t.bigint "customer_id"
+    t.bigint "type_id"
+    t.bigint "license_id"
+    t.bigint "status_id"
+    t.index ["customer_id"], name: "index_procedures_on_customer_id"
+    t.index ["license_id"], name: "index_procedures_on_license_id"
+    t.index ["processor_id"], name: "index_procedures_on_processor_id"
+    t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["type_id"], name: "index_procedures_on_type_id"
+    t.index ["user_id"], name: "index_procedures_on_user_id"
+  end
+
   create_table "processors", force: :cascade do |t|
     t.string "cedula", null: false
     t.string "nombres", null: false
@@ -55,6 +89,20 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_27_213234) do
     t.bigint "user_id"
     t.integer "customers_count", default: 0
     t.index ["user_id"], name: "index_processors_on_user_id"
+  end
+
+  create_table "statuses", force: :cascade do |t|
+    t.string "nombre"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "types", force: :cascade do |t|
+    t.string "nombre"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -71,5 +119,12 @@ ActiveRecord::Schema[7.1].define(version: 2023_12_27_213234) do
   end
 
   add_foreign_key "customers", "processors"
+  add_foreign_key "licenses", "types"
+  add_foreign_key "procedures", "customers"
+  add_foreign_key "procedures", "licenses"
+  add_foreign_key "procedures", "processors"
+  add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "types"
+  add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
 end
