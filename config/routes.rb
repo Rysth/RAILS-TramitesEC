@@ -7,6 +7,8 @@ Rails.application.routes.draw do
       resources :processors
       resources :customers
       resources :procedures
+      resources :types, only: [:index]
+      resources :statuses, only: [:index]
     end
   end
 end

@@ -5,6 +5,16 @@ class Api::V1::ProceduresController < ApplicationController
     render_procedures_response
   end
 
+  def create
+    @procedure = Procedure.new(procedure_params)
+
+    if @procedure.save
+      render_procedures_response
+    else
+      render json: @procedure.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def render_procedures_response
@@ -45,5 +55,9 @@ class Api::V1::ProceduresController < ApplicationController
 
   def all_procedures
     Procedure.includes(:customer, :processor, :user, :license, :status).order(created_at: :asc).all
+  end
+
+  def procedure_params
+    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :user_id, :processor_id, :customer_id, :license_id, :status_id) # rubocop:disable Layout/LineLength
   end
 end
