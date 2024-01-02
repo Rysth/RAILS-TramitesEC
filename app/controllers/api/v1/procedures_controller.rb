@@ -1,5 +1,6 @@
 class Api::V1::ProceduresController < ApplicationController
   before_action :authenticate_devise_api_token!
+  before_action :set_procedure, only: %i[update]
 
   def index
     render_procedures_response
@@ -14,17 +15,25 @@ class Api::V1::ProceduresController < ApplicationController
     end
   end
 
+  def update
+    if @procedure.update(procedure_params)
+      render_procedures_response
+    else
+      render json: @procedure.errors, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def render_procedures_response
     # Retrieve all the information related
     procedures_data = all_procedures.as_json(
       include: {
-        customer: {
-          only: %i[id cedula nombres apellidos]
-        },
         user: {
           only: %i[id username]
+        },
+        customer: {
+          only: %i[id cedula nombres apellidos]
         },
         processor: {
           only: %i[id nombres apellidos]
@@ -61,5 +70,9 @@ class Api::V1::ProceduresController < ApplicationController
 
   def procedure_params
     params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :user_id, :type_id, :processor_id, :customer_id, :license_id, :status_id) # rubocop:disable Layout/LineLength
+  end
+
+  def set_procedure
+    @procedure = Procedure.find(params[:id])
   end
 end

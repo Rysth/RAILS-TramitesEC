@@ -19,8 +19,8 @@ class Procedure < ApplicationRecord
   before_validation :set_fecha, on: :create
 
   def generate_codigo
-    last_procedure = Procedure.order(created_at: :desc).first
-    last_number = last_procedure&.codigo&.match(/\d+/)&.to_i || 0
+    last_procedure = Procedure.last
+    last_number = last_procedure&.codigo&.match(/\d+/)&.[](0).to_i || 0
     self.codigo = "TEC#{format('%07d', last_number + 1)}"
   end
 
