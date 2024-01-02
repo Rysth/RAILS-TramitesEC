@@ -1,6 +1,6 @@
 class Api::V1::ProceduresController < ApplicationController
   before_action :authenticate_devise_api_token!
-  before_action :set_procedure, only: %i[update]
+  before_action :set_procedure, only: %i[update destroy]
 
   def index
     render_procedures_response
@@ -17,6 +17,14 @@ class Api::V1::ProceduresController < ApplicationController
 
   def update
     if @procedure.update(procedure_params)
+      render_procedures_response
+    else
+      render json: @procedure.errors, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    if @procedure.destroy
       render_procedures_response
     else
       render json: @procedure.errors, status: :unprocessable_entity
