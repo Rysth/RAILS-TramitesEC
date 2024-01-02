@@ -8,8 +8,29 @@ class Api::V1::ProceduresController < ApplicationController
   private
 
   def render_procedures_response
+    # Retrieve all the information related
+    procedures_data = all_procedures.as_json(
+      include: {
+        customer: {
+          only: %i[id cedula nombres apellidos]
+        },
+        user: {
+          only: %i[id username]
+        },
+        processor: {
+          only: %i[id nombres apellidos]
+        },
+        license: {
+          only: %i[id nombre]
+        },
+        status: {
+          only: %i[id nombre]
+        }
+      }
+    )
+
     render json: {
-      procedures: all_procedures,
+      procedures: procedures_data,
       stats: calculate_statistics
     }, status: :ok
   end
@@ -21,6 +42,8 @@ class Api::V1::ProceduresController < ApplicationController
       procedures_added_last_7_days: Procedure.where('created_at >= ?', 7.days.ago).count
     }
   end
+
+  
 
   def all_procedures
     Procedure.order(created_at: :asc).all
