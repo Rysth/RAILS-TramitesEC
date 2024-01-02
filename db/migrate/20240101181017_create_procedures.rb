@@ -15,6 +15,7 @@ class CreateProcedures < ActiveRecord::Migration[7.1]
     add_reference :procedures, :user, foreign_key: true
     add_reference :procedures, :processor, foreign_key: true
     add_reference :procedures, :customer, foreign_key: true
+    add_reference :procedures, :type, foreign_key: true
     add_reference :procedures, :license, foreign_key: true
     add_reference :procedures, :status, foreign_key: true
   end

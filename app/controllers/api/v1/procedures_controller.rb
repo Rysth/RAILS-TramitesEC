@@ -58,6 +58,6 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :user_id, :processor_id, :customer_id, :license_id, :status_id) # rubocop:disable Layout/LineLength
+    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :user_id, :type_id, :processor_id, :customer_id, :license_id, :status_id) # rubocop:disable Layout/LineLength
   end
 end

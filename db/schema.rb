@@ -67,12 +67,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
     t.bigint "user_id"
     t.bigint "processor_id"
     t.bigint "customer_id"
+    t.bigint "type_id"
     t.bigint "license_id"
     t.bigint "status_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
     t.index ["license_id"], name: "index_procedures_on_license_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["type_id"], name: "index_procedures_on_type_id"
     t.index ["user_id"], name: "index_procedures_on_user_id"
   end
 
@@ -122,6 +124,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   add_foreign_key "procedures", "licenses"
   add_foreign_key "procedures", "processors"
   add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "types"
   add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
 end

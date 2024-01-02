@@ -64,9 +64,10 @@ Status.create(nombre: "ENTREGADO POR EL PROVEEDOR")
     ganancia: Faker::Number.decimal(l_digits: 3, r_digits: 2),
     ganancia_pendiente: Faker::Number.decimal(l_digits: 3, r_digits: 2),
     observaciones: Faker::Lorem.sentence,
+    user_id: User.ids.sample,
     processor_id: Processor.ids.sample,
     customer_id: Customer.ids.sample,
-    user_id: User.ids.sample,
+    type_id: Type.ids.sample,
     license_id: License.ids.sample,
     status_id: Status.ids.sample
   )

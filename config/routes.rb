@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       resources :customers
       resources :procedures
       resources :types, only: [:index]
+      resources :licenses, only: [:index]
       resources :statuses, only: [:index]
     end
   end
