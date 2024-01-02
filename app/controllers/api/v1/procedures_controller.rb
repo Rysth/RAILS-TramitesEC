@@ -43,9 +43,7 @@ class Api::V1::ProceduresController < ApplicationController
     }
   end
 
-  
-
   def all_procedures
-    Procedure.order(created_at: :asc).all
+    Procedure.includes(:customer, :processor, :user, :license, :status).order(created_at: :asc).all
   end
 end
