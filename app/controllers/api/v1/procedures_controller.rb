@@ -7,7 +7,6 @@ class Api::V1::ProceduresController < ApplicationController
 
   def create
     @procedure = Procedure.new(procedure_params)
-
     if @procedure.save
       render_procedures_response
     else
@@ -29,6 +28,9 @@ class Api::V1::ProceduresController < ApplicationController
         },
         processor: {
           only: %i[id nombres apellidos]
+        },
+        type: {
+          only: %i[id nombre]
         },
         license: {
           only: %i[id nombre]
@@ -54,7 +56,7 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
-    Procedure.includes(:customer, :processor, :user, :license, :status).order(created_at: :asc).all
+    Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :asc).all
   end
 
   def procedure_params

@@ -56,8 +56,6 @@ Status.create(nombre: "ENTREGADO POR EL PROVEEDOR")
 # Seed Procedures with Faker data
 10.times do
   Procedure.create(
-    codigo: Faker::Alphanumeric.unique.alpha(number: 6),
-    fecha: Faker::Date.backward(days: 365),
     placa: Faker::Vehicle.license_plate,
     valor: Faker::Number.decimal(l_digits: 3, r_digits: 2),
     valor_pendiente: Faker::Number.decimal(l_digits: 3, r_digits: 2),
