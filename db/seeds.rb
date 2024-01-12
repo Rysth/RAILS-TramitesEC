@@ -6,9 +6,8 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
 
 
 # Seed Processors with Faker data
-10.times do
+50.times do
   Processor.create(
-    cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
     apellidos: Faker::Name.last_name,
     celular: Faker::PhoneNumber.cell_phone,
@@ -18,7 +17,7 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
 end
 
 # Seed Clientes with Faker data
-10.times do
+100.times do
   Customer.create(
     cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
@@ -27,7 +26,8 @@ end
     direccion: Faker::Address.street_address,
     email: Faker::Internet.email,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    processor_id: Processor.ids.sample
+    processor_id: Processor.ids.sample,
+    user_id: User.ids.sample
   )
 end
 
@@ -49,12 +49,12 @@ License.create(type_id: 3, nombre: "B")
 License.create(type_id: 3, nombre: "F")
 
 # Seed Statusese
-Status.create(nombre: "EN PROCESO")
-Status.create(nombre: "ENTREGADO AL CLIENTE")
-Status.create(nombre: "ENTREGADO POR EL PROVEEDOR")
+Status.create(nombre: "Pendiente")
+Status.create(nombre: "Finalizado")
+Status.create(nombre: "Entregado")
 
 # Seed Procedures with Faker data
-10.times do
+500.times do
   Procedure.create(
     placa: Faker::Vehicle.license_plate,
     valor: Faker::Number.decimal(l_digits: 3, r_digits: 2),
