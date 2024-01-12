@@ -26,7 +26,8 @@ end
     direccion: Faker::Address.street_address,
     email: Faker::Internet.email,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    processor_id: Processor.ids.sample
+    processor_id: Processor.ids.sample,
+    user_id: User.ids.sample
   )
 end
 

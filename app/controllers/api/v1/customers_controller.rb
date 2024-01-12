@@ -40,21 +40,8 @@ class Api::V1::CustomersController < ApplicationController
 
   def render_customers_response
     render json: {
-      customers: all_customers.as_json(include: { processor: { only: %i[id nombres apellidos], include: { user: { only: %i[id username] } } } }),
-      stats: calculate_statistics
+      customers: all_customers.as_json(include: { processor: { only: %i[id] },  user: { only: %i[id username] } })
     }, status: :ok
-  end
-
-  def calculate_statistics
-    customers_quantity = Customer.count
-    customers_added_last_month = Customer.where('created_at >= ?', 1.month.ago).count
-    customers_added_last_7_days = Customer.where('created_at >= ?', 7.days.ago).count
-
-    {
-      customers_quantity:,
-      customers_added_last_month:,
-      customers_added_last_7_days:
-    }
   end
 
   def all_customers
@@ -66,6 +53,6 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def customer_params
-    params.require(:customer).permit(:id, :cedula, :nombres, :apellidos, :celular, :direccion, :email, :active, :processor_id)
+    params.require(:customer).permit(:id, :cedula, :nombres, :apellidos, :celular, :direccion, :email, :active, :processor_id, :user_id)
   end
 end

@@ -1,6 +1,7 @@
 class Customer < ApplicationRecord
   has_many :procedures
-  belongs_to :processor, counter_cache: true
+  belongs_to :user
+  belongs_to :processor
 
   validates :cedula, presence: true, uniqueness: { case_sensitive: false }
   validates :nombres, presence: true

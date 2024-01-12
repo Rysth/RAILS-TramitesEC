@@ -24,8 +24,10 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.bigint "processor_id"
     t.index ["processor_id"], name: "index_customers_on_processor_id"
+    t.index ["user_id"], name: "index_customers_on_user_id"
   end
 
   create_table "devise_api_tokens", force: :cascade do |t|
@@ -87,7 +89,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
-    t.integer "customers_count", default: 0
     t.index ["user_id"], name: "index_processors_on_user_id"
   end
 
@@ -119,6 +120,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   end
 
   add_foreign_key "customers", "processors"
+  add_foreign_key "customers", "users"
   add_foreign_key "licenses", "types"
   add_foreign_key "procedures", "customers"
   add_foreign_key "procedures", "licenses"
