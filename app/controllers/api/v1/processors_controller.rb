@@ -35,7 +35,7 @@ class Api::V1::ProcessorsController < ApplicationController
         processors: all_processors.map do |processor|
           {
             id: processor.id,
-            cedula: processor.cedula,
+            codigo: processor.codigo,
             nombres: processor.nombres,
             apellidos: processor.apellidos,
             celular: processor.celular,
@@ -44,8 +44,7 @@ class Api::V1::ProcessorsController < ApplicationController
               username: processor.user&.username
             }
           }
-        end,
-        stats: calculate_statistics
+        end
       }.to_json, status: :conflict
     end
 
@@ -67,7 +66,7 @@ class Api::V1::ProcessorsController < ApplicationController
       processors: all_processors.map do |processor|
         {
           id: processor.id,
-          cedula: processor.cedula,
+          codigo: processor.codigo,
           nombres: processor.nombres,
           apellidos: processor.apellidos,
           celular: processor.celular,
@@ -76,17 +75,8 @@ class Api::V1::ProcessorsController < ApplicationController
             username: processor.user&.username
           }
         }
-      end,
-      stats: calculate_statistics
+      end
     }, status: :ok
-  end
-
-  def calculate_statistics
-    {
-      processors_quantity: Processor.count,
-      processors_added_last_month: Processor.where('created_at >= ?', 1.month.ago).count,
-      processors_added_last_7_days: Processor.where('created_at >= ?', 7.days.ago).count
-    }
   end
 
   def all_processors

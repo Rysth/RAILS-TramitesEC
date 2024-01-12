@@ -8,7 +8,6 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
 # Seed Processors with Faker data
 10.times do
   Processor.create(
-    cedula: Faker::IDNumber.unique.spanish_citizen_number,
     nombres: Faker::Name.first_name,
     apellidos: Faker::Name.last_name,
     celular: Faker::PhoneNumber.cell_phone,
@@ -54,7 +53,7 @@ Status.create(nombre: "ENTREGADO AL CLIENTE")
 Status.create(nombre: "ENTREGADO POR EL PROVEEDOR")
 
 # Seed Procedures with Faker data
-10.times do
+100.times do
   Procedure.create(
     placa: Faker::Vehicle.license_plate,
     valor: Faker::Number.decimal(l_digits: 3, r_digits: 2),

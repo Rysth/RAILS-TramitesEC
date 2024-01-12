@@ -79,7 +79,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_01_01_181017) do
   end
 
   create_table "processors", force: :cascade do |t|
-    t.string "cedula", null: false
+    t.string "codigo", null: false
     t.string "nombres", null: false
     t.string "apellidos", null: false
     t.string "celular", null: false
