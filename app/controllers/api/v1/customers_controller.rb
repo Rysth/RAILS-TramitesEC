@@ -45,7 +45,7 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def all_customers
-    Customer.includes(processor: [:user]).order(created_at: :asc)
+    Customer.includes(:processor, :user).order(created_at: :desc)
   end
 
   def set_customer

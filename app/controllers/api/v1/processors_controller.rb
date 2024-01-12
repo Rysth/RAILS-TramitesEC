@@ -80,7 +80,7 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def all_processors
-    Processor.includes(:user).order(created_at: :asc)
+    Processor.includes(:user).order(created_at: :desc)
   end
 
   def set_processor
