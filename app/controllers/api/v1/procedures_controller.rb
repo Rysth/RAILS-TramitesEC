@@ -38,7 +38,7 @@ class Api::V1::ProceduresController < ApplicationController
     procedures_data = all_procedures.as_json(
       include: {
         user: {
-          only: %i[id username]
+          only: %i[id]
         },
         customer: {
           only: %i[id cedula nombres apellidos]
@@ -73,7 +73,7 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
-    Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :asc).all
+    Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :desc).all
   end
 
   def procedure_params
