@@ -18,11 +18,14 @@ class Api::V1::ProfilesController < ApplicationController
       month_end = i.months.ago.end_of_month
 
       procedures_data = @user_profile.procedures.where(created_at: month_start..month_end)
-      processors_data = processors.where(created_at: month_start..month_end)
+      processors_data = processors.includes(:customers).where(created_at: month_start..month_end)
+
+      customer_count_sum = processors_data.inject(0) { |sum, processor| sum + processor.customers.count }
+
       quantity_and_months << {
         Meses: month_start.strftime('%B %Y'),
         Tramitadores: processors_data.count,
-        Clientes: processors_data.sum(&:customers_count),
+        Clientes: customer_count_sum,
         Tramites: procedures_data.count
       }
     end
