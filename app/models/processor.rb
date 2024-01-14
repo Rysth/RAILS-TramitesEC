@@ -1,7 +1,7 @@
 class Processor < ApplicationRecord
   belongs_to :user
   has_many :procedures
-  has_many :customers, strict_loading: true
+  has_many :customers, counter_cache: true
 
   validates :codigo, presence: true, uniqueness: { case_sensitive: false }
   validates :nombres, presence: true

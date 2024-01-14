@@ -20,7 +20,7 @@ class Api::V1::ProfilesController < ApplicationController
       procedures_data = @user_profile.procedures.where(created_at: month_start..month_end)
       processors_data = processors.includes(:customers).where(created_at: month_start..month_end)
 
-      customer_count_sum = processors_data.inject(0) { |sum, processor| sum + processor.customers.count }
+      customer_count_sum = processors_data.sum(:customers_count)
 
       quantity_and_months << {
         Meses: month_start.strftime('%B %Y'),
