@@ -6,16 +6,15 @@ class Api::V1::ProcessorsController < ApplicationController
     render_processors_response
   end
 
-  # Extract this method for Profile
   def show
     render_processors_response
   end
 
   def create
     @processor = Processor.new(processor_params)
-
+  
     if @processor.save
-      render_processors_response
+      render json: processor_data(@processor), status: :created
     else
       render json: @processor.errors, status: :unprocessable_entity
     end
@@ -23,35 +22,21 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def update
     if @processor.update(processor_params)
-      render_processors_response
+      render json: processor_data(@processor), status: :ok
     else
       render json: @processor.errors, status: :unprocessable_entity
     end
   end
-
+  
   def destroy
     if customers?
-      return render json: {
-        processors: all_processors.map do |processor|
-          {
-            id: processor.id,
-            codigo: processor.codigo,
-            nombres: processor.nombres,
-            apellidos: processor.apellidos,
-            celular: processor.celular,
-            user: {
-              id: processor.user&.id,
-              username: processor.user&.username
-            }
-          }
-        end
-      }.to_json, status: :conflict
-    end
-
-    if @processor.destroy
-      render_processors_response
+      render json: { error: 'Processor has associated customers and cannot be deleted.' }, status: :conflict
     else
-      render json: @processor.errors, status: :unprocessable_entity
+      if @processor.destroy
+        render json: { message: 'Processor successfully deleted.' }, status: :ok
+      else
+        render json: @processor.errors, status: :unprocessable_entity
+      end
     end
   end
 
