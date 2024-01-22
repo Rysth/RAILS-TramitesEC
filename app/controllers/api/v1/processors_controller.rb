@@ -12,7 +12,8 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def create
     @processor = Processor.new(processor_params)
-  
+    @processor.user_id = current_devise_api_user.id
+    
     if @processor.save
       render json: processor_data(@processor), status: :created
     else
@@ -27,7 +28,7 @@ class Api::V1::ProcessorsController < ApplicationController
       render json: @processor.errors, status: :unprocessable_entity
     end
   end
-  
+
   def destroy
     if customers?
       render json: { error: 'Processor has associated customers and cannot be deleted.' }, status: :conflict
@@ -84,7 +85,19 @@ class Api::V1::ProcessorsController < ApplicationController
     @processor = Processor.find(params[:id])
   end
 
+  
+  def processor_data(processor)
+    processor.as_json(
+        only: [:id, :codigo, :nombres, :apellidos, :celular],
+        include: {
+          user: {
+            only: [:id, :username]
+          }
+        }
+      )
+  end
+
   def processor_params
-    params.require(:processor).permit(:cedula, :nombres, :apellidos, :celular, :active, :user_id)
+    params.require(:processor).permit(:nombres, :apellidos, :celular)
   end
 end
