@@ -73,7 +73,7 @@ class Api::V1::CustomersController < ApplicationController
   def customer_data(customer)
     customer.as_json(
       include: {
-        processor: { only: %i[id] },
+        processor: { only: %i[id codigo nombres apellidos] },
         user: { only: %i[id username] }
       }
     )

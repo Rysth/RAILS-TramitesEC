@@ -41,6 +41,12 @@ class Api::V1::ProcessorsController < ApplicationController
     end
   end
 
+  def search_from_customers
+    query = params[:query]
+    processors = Processor.where('LOWER(codigo) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+    render json: processors.as_json(only: [:id, :codigo, :nombres, :apellidos])
+  end
+
   private
 
   def customers?
@@ -80,11 +86,9 @@ class Api::V1::ProcessorsController < ApplicationController
     processors.page(params[:page])
   end
   
-
   def set_processor
     @processor = Processor.find(params[:id])
   end
-
   
   def processor_data(processor)
     processor.as_json(
