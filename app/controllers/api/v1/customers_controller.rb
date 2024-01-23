@@ -58,7 +58,7 @@ class Api::V1::CustomersController < ApplicationController
   
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      customers = customers.where('LOWER(cedula) LIKE :search OR LOWER(email) LIKE :search OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :search', search: search_term)
+      customers = customers.where('LOWER(cedula) LIKE :search OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :search', search: search_term)
     end
   
     customers = customers.where(user_id: params[:userId]) if params[:userId].present?
