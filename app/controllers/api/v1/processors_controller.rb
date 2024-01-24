@@ -13,7 +13,7 @@ class Api::V1::ProcessorsController < ApplicationController
   def create
     @processor = Processor.new(processor_params)
     @processor.user_id = current_devise_api_user.id
-    
+
     if @processor.save
       render json: processor_data(@processor), status: :created
     else
@@ -32,19 +32,18 @@ class Api::V1::ProcessorsController < ApplicationController
   def destroy
     if customers?
       render json: { error: 'Processor has associated customers and cannot be deleted.' }, status: :conflict
+    elsif @processor.destroy
+      render json: { message: 'Processor successfully deleted.' }, status: :ok
     else
-      if @processor.destroy
-        render json: { message: 'Processor successfully deleted.' }, status: :ok
-      else
-        render json: @processor.errors, status: :unprocessable_entity
-      end
+      render json: @processor.errors, status: :unprocessable_entity
     end
   end
 
   def search_from_customers
     query = params[:query]
-    processors = Processor.where('LOWER(codigo) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
-    render json: processors.as_json(only: [:id, :codigo, :nombres, :apellidos])
+    processors = Processor.where('LOWER(codigo) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query',
+                                 query: "%#{query}%").order(created_at: :desc).page(1)
+    render json: processors.as_json(only: %i[id codigo nombres apellidos])
   end
 
   private
@@ -57,10 +56,10 @@ class Api::V1::ProcessorsController < ApplicationController
     processors = all_processors
     render json: {
       processors: processors.as_json(
-        only: [:id, :codigo, :nombres, :apellidos, :celular],
+        only: %i[id codigo nombres apellidos celular],
         include: {
           user: {
-            only: [:id, :username]
+            only: %i[id username]
           }
         }
       ),
@@ -85,20 +84,20 @@ class Api::V1::ProcessorsController < ApplicationController
     processors = processors.where(user_id: params[:userId]) if params[:userId].present?
     processors.page(params[:page]).per(20)
   end
-  
+
   def set_processor
     @processor = Processor.find(params[:id])
   end
-  
+
   def processor_data(processor)
     processor.as_json(
-        only: [:id, :codigo, :nombres, :apellidos, :celular],
-        include: {
-          user: {
-            only: [:id, :username]
-          }
+      only: %i[id codigo nombres apellidos celular],
+      include: {
+        user: {
+          only: %i[id username]
         }
-      )
+      }
+    )
   end
 
   def processor_params

@@ -39,8 +39,9 @@ class Api::V1::CustomersController < ApplicationController
 
   def search_from_procedures
     query = params[:query]
-    customers = Customer.where('LOWER(cedula) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
-    render json: customers.as_json(only: [:id, :cedula, :nombres, :apellidos])
+    customers = Customer.where('LOWER(cedula) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query',
+                               query: "%#{query}%").order(created_at: :desc).page(1)
+    render json: customers.as_json(only: %i[id cedula nombres apellidos])
   end
 
   private
@@ -61,16 +62,15 @@ class Api::V1::CustomersController < ApplicationController
 
   def all_customers
     customers = Customer.includes(:processor, :user).order(created_at: :desc)
-  
+
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
       customers = customers.where('LOWER(cedula) LIKE :search OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :search', search: search_term)
     end
-  
+
     customers = customers.where(user_id: params[:userId]) if params[:userId].present?
     customers.page(params[:page]).per(20)
   end
-  
 
   def set_customer
     @customer = Customer.find(params[:id])

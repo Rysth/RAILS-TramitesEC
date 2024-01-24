@@ -71,18 +71,25 @@ class Api::V1::ProceduresController < ApplicationController
     customer_id = procedure_params[:customer_id]
     active_status_ids = [1, 2] # Status IDs for active procedures
 
-    if Procedure.where(customer_id: customer_id, status_id: active_status_ids).exists?
-      render json: { error: 'The customer has an active procedure right now' }, status: :conflict
-      return
-    end
+    return unless Procedure.where(customer_id:, status_id: active_status_ids).exists?
+
+    render json: { error: 'The customer has an active procedure right now' }, status: :conflict
+    nil
   end
-  
+
   def all_procedures
     procedures = Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :desc)
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:processor, :status, :customer).where('LOWER(procedures.codigo) LIKE :search OR LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR LOWER(CONCAT(customers.nombres, \' \', customers.apellidos)) LIKE :search OR LOWER(statuses.nombre) LIKE :search', search: search_term)
+      procedures = procedures.joins(:processor, :status, :customer)
+      procedures = procedures.where(
+        'LOWER(procedures.codigo) LIKE :search OR ' \
+        'LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR ' \
+        'LOWER(CONCAT(customers.nombres, \' \', customers.apellidos)) LIKE :search OR ' \
+        'LOWER(statuses.nombre) LIKE :search',
+        search: search_term
+      )
     end
 
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
@@ -90,7 +97,8 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :type_id, :processor_id, :customer_id, :license_id, :status_id)
+    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :type_id, :processor_id,
+                                      :customer_id, :license_id, :status_id)
   end
 
   def set_procedure
