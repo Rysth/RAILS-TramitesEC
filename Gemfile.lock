@@ -349,7 +349,6 @@ GEM
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    will_paginate (4.0.0)
     xpath (3.2.0)
       nokogiri (~> 1.8)
     zeitwerk (2.6.12)
@@ -368,7 +367,7 @@ DEPENDENCIES
   foreman (~> 0.87.2)
   importmap-rails
   jbuilder
-  kaminari (~> 1.2)
+  kaminari
   letter_opener
   pg (~> 1.1)
   puma (>= 5.0)
@@ -385,7 +384,6 @@ DEPENDENCIES
   turbo-rails
   tzinfo-data
   web-console
-  will_paginate (~> 4.0)
 
 RUBY VERSION
    ruby 3.2.2p53
