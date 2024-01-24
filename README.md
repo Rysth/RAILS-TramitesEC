@@ -1,8 +1,8 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <img src="https://placehold.co/1500x450" />
-  <h3><b>Your Name</b></h3>
+  <img src="./banner.png" />
+  <h3><b>John Palacios</b></h3>
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -25,9 +25,9 @@
 
 <!-- PROJECT DESCRIPTION -->
 
-# 📖 Ruby on Rails Template <a name="about-project"></a>
+# 📖 About TramitesEC <a name="about-project"></a>
 
-**Ruby on Rails Template** description...
+**TramitesEC** is a dynamic and robust Ruby on Rails application designed to manage and streamline the process of handling various procedures, customers, and processors. It's tailored to enhance operational efficiency and user experience.
 
 ## 🛠 Built With <a name="built-with"></a>
 
@@ -36,7 +36,7 @@
 <details>
   <summary>Client</summary>
   <ul>
-    <li><a href="https://www.ruby-lang.org/en/">Ruby</a></li>
+    <li><a href="https://reactjs.org/">React</a></li>
     <li><a href="https://www.tailwindcss.com/">TailwindCSS</a></li>
   </ul>
 </details>
@@ -59,9 +59,9 @@
 
 ### Key Features <a name="key-features"></a>
 
-- **Key Feature**
-- **Key Feature**
-- **Key Feature**
+- **Efficient management of procedures, customers, and processors.**
+- **Advanced search and filtering capabilities.**
+- **Real-time data analytics and reporting.**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -112,9 +112,9 @@ Use this command to fix **Stylelint** Errors:
 
 ## 👥 Authors <a name="authors"></a>
 
-👤 **Author1**
+👤 **John Palacios**
 
-- GitHub: [@rysthcraft](https://github.com/Rysth)
+- GitHub: [@rysthdesign](https://github.com/Rysth)
 - LinkedIn: [LinkedIn](https://www.linkedin.com/in/john-palacios-rysthcraft)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -123,8 +123,7 @@ Use this command to fix **Stylelint** Errors:
 
 ## 🔭 Future Features <a name="future-features"></a>
 
-- [ ] **Future Feature**
-- [ ] **Future Feature**
+- [ ] **Integration with external APIs for real-time data processing.**
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -142,7 +141,7 @@ Feel free to check the [issues page](../../issues/).
 
 ## 🙏 Acknowledgments <a name="acknowledgements"></a>
 
-I would like to thanks to my family members for supporting me during Microverse, and their team.
+Special thanks to my family, friends, and my customers for their continuous support.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
