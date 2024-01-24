@@ -83,7 +83,7 @@ class Api::V1::ProcessorsController < ApplicationController
     end
 
     processors = processors.where(user_id: params[:userId]) if params[:userId].present?
-    processors.page(params[:page])
+    processors.page(params[:page]).per(20)
   end
   
   def set_processor

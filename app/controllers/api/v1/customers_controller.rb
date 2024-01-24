@@ -68,7 +68,7 @@ class Api::V1::CustomersController < ApplicationController
     end
   
     customers = customers.where(user_id: params[:userId]) if params[:userId].present?
-    customers.page(params[:page])
+    customers.page(params[:page]).per(20)
   end
   
 

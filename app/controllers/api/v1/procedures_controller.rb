@@ -76,7 +76,7 @@ class Api::V1::ProceduresController < ApplicationController
     end
 
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-    procedures.page(params[:page])
+    procedures.page(params[:page]).per(20)
   end
 
   def procedure_params

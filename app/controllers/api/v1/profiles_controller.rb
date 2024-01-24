@@ -3,29 +3,28 @@ class Api::V1::ProfilesController < ApplicationController
 
   def show
     @user_profile = current_devise_api_user
-    quantity_and_months = calculate_quantity_and_months(@user_profile.processors)
+    quantity_and_months = calculate_quantity_and_months
 
     render json: quantity_and_months, status: :ok
   end
 
   private
 
-  def calculate_quantity_and_months(processors)
+  def calculate_quantity_and_months
     quantity_and_months = []
 
     (0..5).reverse_each do |i|
       month_start = i.months.ago.beginning_of_month
       month_end = i.months.ago.end_of_month
 
+      processors_data = @user_profile.processors.includes(:customers).where(created_at: month_start..month_end)
       procedures_data = @user_profile.procedures.where(created_at: month_start..month_end)
-      processors_data = processors.includes(:customers).where(created_at: month_start..month_end)
-
-      customer_count_sum = processors_data.sum(:customers_count)
+      customers_data = @user_profile.customers.where(created_at: month_start..month_end)
 
       quantity_and_months << {
         Meses: month_start.strftime('%B %Y'),
         Tramitadores: processors_data.count,
-        Clientes: customer_count_sum,
+        Clientes: customers_data.count,
         Tramites: procedures_data.count
       }
     end
