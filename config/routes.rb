@@ -6,6 +6,7 @@ Rails.application.routes.draw do
       resources :users, only: [:index, :show]  
       get 'processors/search_from_customers', to: 'processors#search_from_customers'
       resources :processors
+      get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
       resources :customers
       resources :procedures
       resources :types, only: [:index]

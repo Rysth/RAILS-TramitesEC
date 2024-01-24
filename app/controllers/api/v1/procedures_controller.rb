@@ -12,7 +12,7 @@ class Api::V1::ProceduresController < ApplicationController
 
   def create
     @procedure = Procedure.new(procedure_params)
-    @customer.user_id = current_devise_api_user.id
+    @procedure.user_id = current_devise_api_user.id
 
     if @procedure.save
       render json: procedure_data(@procedure), status: :created
@@ -58,7 +58,7 @@ class Api::V1::ProceduresController < ApplicationController
       include: {
         user: { only: %i[id username] },
         customer: { only: %i[id cedula nombres apellidos] },
-        processor: { only: %i[id nombres apellidos] },
+        processor: { only: %i[id codigo nombres apellidos] },
         type: { only: %i[id nombre] },
         license: { only: %i[id nombre] },
         status: { only: %i[id nombre] }

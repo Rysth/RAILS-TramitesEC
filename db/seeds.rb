@@ -1,6 +1,6 @@
 # Seed Users
 User.create(username: "John Palacios", email: "admin@test.com", password: "123456")
-User.create(username: "Ericka Briones", email: "ericka.b@test.com", password: "123456")
+User.create(username: "Ericka Contreras", email: "ericka.c@test.com", password: "123456")
 User.create(username: "William Briones", email: "william.b@test.com", password: "123456")
 User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456")
 
@@ -50,8 +50,8 @@ License.create(type_id: 3, nombre: "F")
 
 # Seed Statusese
 Status.create(nombre: "Pendiente")
+Status.create(nombre: "En Proceso")
 Status.create(nombre: "Finalizado")
-Status.create(nombre: "Entregado")
 
 # Seed Procedures with Faker data
 500.times do
