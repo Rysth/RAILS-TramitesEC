@@ -72,7 +72,7 @@ class Api::V1::ProceduresController < ApplicationController
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.where('LOWER(codigo) LIKE :search', search: search_term)
+      procedures = procedures.joins(:processor, :status).where('LOWER(procedures.codigo) LIKE :search OR LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR LOWER(statuses.nombre) LIKE :search', search: search_term)
     end
 
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
