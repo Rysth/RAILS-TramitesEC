@@ -10,7 +10,7 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
   Processor.create(
     nombres: Faker::Name.first_name,
     apellidos: Faker::Name.last_name,
-    celular: Faker::PhoneNumber.cell_phone,
+    celular: Faker::Number.number(digits: 10),
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     user_id: User.ids.sample
   )
@@ -19,10 +19,10 @@ end
 # Seed Clientes with Faker data
 1000.times do
   Customer.create(
-    cedula: Faker::IDNumber.unique.spanish_citizen_number,
+    cedula: Faker::Number.number(digits: 10),
     nombres: Faker::Name.first_name,
     apellidos: Faker::Name.last_name,
-    celular: Faker::PhoneNumber.cell_phone,
+    celular: Faker::Number.number(digits: 10),
     direccion: Faker::Address.street_address,
     email: Faker::Internet.email,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
@@ -58,9 +58,9 @@ Status.create(nombre: "Finalizado")
   Procedure.create(
     placa: Faker::Vehicle.license_plate,
     valor: Faker::Number.decimal(l_digits: 3, r_digits: 2),
-    valor_pendiente: Faker::Number.decimal(l_digits: 3, r_digits: 2),
-    ganancia: Faker::Number.decimal(l_digits: 3, r_digits: 2),
-    ganancia_pendiente: Faker::Number.decimal(l_digits: 3, r_digits: 2),
+    valor_pendiente: Faker::Number.decimal(l_digits: 2, r_digits: 2),
+    ganancia: Faker::Number.decimal(l_digits: 2, r_digits: 2),
+    ganancia_pendiente: Faker::Number.decimal(l_digits: 2, r_digits: 2),
     observaciones: Faker::Lorem.sentence,
     user_id: User.ids.sample,
     processor_id: Processor.ids.sample,

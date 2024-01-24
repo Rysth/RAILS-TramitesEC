@@ -39,7 +39,7 @@ class Api::V1::CustomersController < ApplicationController
 
   def search_from_procedures
     query = params[:query]
-    customers = Customer.where('LOWER(cedula) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+    customers = Customer.where('LOWER(cedula) LIKE :query OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
     render json: customers.as_json(only: [:id, :cedula, :nombres, :apellidos])
   end
 

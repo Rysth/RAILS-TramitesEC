@@ -6,7 +6,7 @@ class Processor < ApplicationRecord
   validates :codigo, presence: true, uniqueness: { case_sensitive: false }
   validates :nombres, presence: true
   validates :apellidos, presence: true
-  validates :celular, presence: true
+  validates :celular, presence: true, numericality: { only_integer: true }
   validates :active, inclusion: { in: [true, false] }
 
   before_validation :generate_codigo, on: :create
