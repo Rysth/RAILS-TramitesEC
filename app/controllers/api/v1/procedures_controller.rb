@@ -1,6 +1,7 @@
 class Api::V1::ProceduresController < ApplicationController
   before_action :authenticate_devise_api_token!
   before_action :set_procedure, only: %i[show update destroy]
+  before_action :check_active_procedure, only: %i[create update]
 
   def index
     render_procedures_response
@@ -66,6 +67,15 @@ class Api::V1::ProceduresController < ApplicationController
     )
   end
 
+  def check_active_procedure
+    customer_id = procedure_params[:customer_id]
+    active_status_ids = [1, 2] # Status IDs for active procedures
+
+    if Procedure.where(customer_id: customer_id, status_id: active_status_ids).exists?
+      render json: { error: 'The customer has an active procedure right now' }, status: :conflict
+      return
+    end
+  end
   
   def all_procedures
     procedures = Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :desc)
