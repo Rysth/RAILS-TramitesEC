@@ -1,7 +1,7 @@
 class Api::V1::ProceduresController < ApplicationController
   before_action :authenticate_devise_api_token!
   before_action :set_procedure, only: %i[show update destroy]
-  before_action :check_active_procedure, only: %i[create update]
+  before_action :check_active_procedure, only: %i[create]
 
   def index
     render_procedures_response
@@ -82,7 +82,7 @@ class Api::V1::ProceduresController < ApplicationController
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:processor, :status).where('LOWER(procedures.codigo) LIKE :search OR LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR LOWER(statuses.nombre) LIKE :search', search: search_term)
+      procedures = procedures.joins(:processor, :status, :customer).where('LOWER(procedures.codigo) LIKE :search OR LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR LOWER(CONCAT(customers.nombres, \' \', customers.apellidos)) LIKE :search OR LOWER(statuses.nombre) LIKE :search', search: search_term)
     end
 
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
