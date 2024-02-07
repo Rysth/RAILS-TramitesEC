@@ -49,7 +49,7 @@ class Api::V1::CustomersController < ApplicationController
   def render_customers_response
     customers = all_customers
     render json: {
-      customers: customers.as_json(include: { processor: { only: %i[id] }, user: { only: %i[id username] } }),
+      customers: customers.as_json(include: { processor: { only: %i[id nombres apellidos] }, user: { only: %i[id username] } }),
       pagination: {
         total_pages: customers.total_pages,
         current_page: customers.current_page,

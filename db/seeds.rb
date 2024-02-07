@@ -32,32 +32,28 @@ end
 end
 
 # Seed Types
-Type.create(nombre: "Renovación")
-Type.create(nombre: "Tipo de Sangre")
 Type.create(nombre: "Revisión")
+Type.create(nombre: "Renovación")
+Type.create(nombre: "Ingresos") # Casos de Usuarios Directos
+Type.create(nombre: "Título")  # Cursos Manejo (Primera Vez)
+Type.create(nombre: "Recuperación de Puntos")
+Type.create(nombre: "Duplicado AAA")
+Type.create(nombre: "Duplicado de Licencia Original")
+Type.create(nombre: "Desbloqueo de Licencia")
+Type.create(nombre: "Licencia Anclada")
+Type.create(nombre: "Actualización de Datos")
 Type.create(nombre: "Observación Laminas Oscuras")
 Type.create(nombre: "Certificados sin Deuda")
 Type.create(nombre: "Certificados con Deuda")
 Type.create(nombre: "Revisión Transporte Público")
 Type.create(nombre: "Cambio de Propietario")
 Type.create(nombre: "Cambio de Color")
-Type.create(nombre: "Duplicado AAA")
-Type.create(nombre: "Duplicado de Licencia")
-Type.create(nombre: "Cambio de Propietario Directo")
 Type.create(nombre: "Gravamen")
-Type.create(nombre: "Desbloqueo de Licencia")
-Type.create(nombre: "Licencia Anclada")
-Type.create(nombre: "Título")
 Type.create(nombre: "Revisión ATM Particulares")
 Type.create(nombre: "Cambio de Comercial/Particular")
-Type.create(nombre: "RTV Alquiler")
-Type.create(nombre: "RTV Particular")
 Type.create(nombre: "Ingreso de Vehículo")
-Type.create(nombre: "Recuperación de Puntos")
-Type.create(nombre: "Primera Vez No Profesionales")
-Type.create(nombre: "Licencias Profesionales")
+Type.create(nombre: "Tipo de Sangre")
 Type.create(nombre: "CUV")
-Type.create(nombre: "Actualización de Datos")
 
 # Seed Licenses
 License.create(type_id: 2, nombre: "A1")
@@ -72,10 +68,10 @@ License.create(type_id: 3, nombre: "B")
 License.create(type_id: 3, nombre: "F")
 
 # Seed Statuses
-Status.create(nombre: "Entregado Proveedor")
 Status.create(nombre: "En Proceso")
+Status.create(nombre: "Entregado Proveedor")
+Status.create(nombre: "Envíado Brevetar") # Ej: Es un ingreso (Renovación, significa que me entrego una documentación) Paso Opcional
 Status.create(nombre: "Entregado Cliente")
-Status.create(nombre: "Envíado Brevetar")
 
 # Seed Procedures with Faker data
 500.times do

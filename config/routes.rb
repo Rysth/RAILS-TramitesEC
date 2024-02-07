@@ -5,7 +5,6 @@ Rails.application.routes.draw do
       resources :profiles, only: [:show]
       resources :users, only: [:index, :show]  
       get 'processors/search_from_customers', to: 'processors#search_from_customers'
-      get 'processors/calculate_quantity_and_months', to: 'processors#calculate_quantity_and_months'
       resources :processors
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
       resources :customers
