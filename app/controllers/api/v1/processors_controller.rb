@@ -1,6 +1,6 @@
 class Api::V1::ProcessorsController < ApplicationController
   before_action :authenticate_devise_api_token!
-  before_action :set_processor, only: %i[show update destroy]
+  before_action :set_processor, only: %i[show update destroy calculate_quantity_and_months]
 
   def index
     render_processors_response
@@ -45,6 +45,30 @@ class Api::V1::ProcessorsController < ApplicationController
                                  query: "%#{query}%").order(created_at: :desc).page(1)
     render json: processors.as_json(only: %i[id codigo nombres apellidos])
   end
+
+  
+  def calculate_quantity_and_months
+    quantity_and_months = []
+  
+    (0..3).reverse_each do |i|
+      month_start = i.months.ago.beginning_of_month
+      month_end = i.months.ago.end_of_month
+  
+      customers = Customer.where(processor_id: @processor.id)
+                          .where(created_at: month_start..month_end)
+      procedures = Procedure.where(processor_id: @processor.id)
+                          .where(created_at: month_start..month_end)
+  
+      quantity_and_months << {
+        Mes: month_start.strftime('%B %Y'),
+        Clientes: customers.count,
+        Tramites: procedures.count
+      }
+    end
+  
+    render json: quantity_and_months
+  end
+  
 
   private
 
