@@ -12,6 +12,11 @@ class Api::V1::ProcessorsController < ApplicationController
   
     procedures = @processor.procedures.includes(:customer, :status, :type, :user)
                   .order(created_at: :desc).page(page).per(per_page)
+    completed_procedures = @processor.procedures.where(status_id: 3, valor_pendiente: 0, ganancia_pendiente: 0)
+    total_valores = completed_procedures.sum(:valor)
+    total_ganancias = completed_procedures.sum(:ganancia)
+    total_clientes = @processor.customers.count
+    total_tramites = @processor.procedures.count
   
     total_pages = procedures.total_pages
   
@@ -24,6 +29,12 @@ class Api::V1::ProcessorsController < ApplicationController
         user: { only: [:username] }
       }),
       processor: @processor.as_json(only: [:nombres, :apellidos]),
+      processor_stats: {
+        valores: total_valores,
+        ganancias: total_ganancias,
+        clientes: total_clientes,
+        tramites: total_tramites,
+      },
       pagination: {
         total_pages: total_pages,
         current_page: page
