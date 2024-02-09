@@ -22,7 +22,7 @@ class Api::V1::ProcessorsController < ApplicationController
   
     render json: {
       procedures: procedures.as_json(include: { 
-        customer: { only: [:nombres, :apellidos] },
+        customer: { only: [:id, :nombres, :apellidos] },
         status: { only: [:id, :nombre] },
         type: { only: :nombre },
         processor: { only: [:nombres, :apellidos] },

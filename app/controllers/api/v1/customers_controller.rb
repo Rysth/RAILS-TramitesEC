@@ -7,7 +7,39 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def show
-    render json: customer_data(@customer), status: :ok
+    page = params[:page].to_i || 1
+    per_page = 10
+  
+    procedures = @customer.procedures.includes(:processor, :status, :type, :user)
+                  .order(created_at: :desc).page(page).per(per_page)
+    completed_procedures = @customer.procedures.where(status_id: 3, valor_pendiente: 0, ganancia_pendiente: 0)
+    total_valores = completed_procedures.sum(:valor)
+    total_ganancias = completed_procedures.sum(:ganancia)
+    total_tramites = @customer.procedures.count
+    total_tramites_finalizados = completed_procedures.count
+  
+    total_pages = procedures.total_pages
+  
+    render json: {
+      procedures: procedures.as_json(include: { 
+        customer: { only: [:id, :nombres, :apellidos] },
+        status: { only: [:id, :nombre] },
+        type: { only: :nombre },
+        processor: { only: [:id, :nombres, :apellidos] },
+        user: { only: [:username] }
+      }),
+      customer: @customer.as_json(only: [:nombres, :apellidos]),
+      customer_stats: {
+        valores: total_valores,
+        ganancias: total_ganancias,
+        tramites: total_tramites,
+        tramites_finalizados: total_tramites_finalizados,
+      },
+      pagination: {
+        total_pages: total_pages,
+        current_page: page
+      }
+    }, status: :ok
   end
 
   def create
@@ -49,7 +81,7 @@ class Api::V1::CustomersController < ApplicationController
   def render_customers_response
     customers = all_customers
     render json: {
-      customers: customers.as_json(include: { processor: { only: %i[id nombres apellidos] }, user: { only: %i[id username] } }),
+      customers: customers.as_json(include: { processor: { only: %i[id nombres apellidos celular] }, user: { only: %i[id username] } }),
       pagination: {
         total_pages: customers.total_pages,
         current_page: customers.current_page,
