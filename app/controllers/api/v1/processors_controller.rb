@@ -63,8 +63,8 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def destroy
-    if customers?
-      render json: { error: 'Processor has associated customers and cannot be deleted.' }, status: :conflict
+    if customers? || procedures?
+      render json: { error: 'Processor has associated customers or procedures and cannot be deleted.' }, status: :conflict
     elsif @processor.destroy
       render json: { message: 'Processor successfully deleted.' }, status: :ok
     else
@@ -82,6 +82,10 @@ class Api::V1::ProcessorsController < ApplicationController
 
   def customers?
     @processor.customers.exists?
+  end
+
+  def procedures?
+    @processor.procedures.exists?
   end
 
   def render_processors_response
