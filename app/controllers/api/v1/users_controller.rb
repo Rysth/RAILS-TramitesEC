@@ -2,7 +2,7 @@ class Api::V1::UsersController < ApplicationController
   before_action :authenticate_devise_api_token!
 
   def index
-    @users = User.all
+    @users = User.where(active: true).all
     render json: @users, status: :ok
   end
 

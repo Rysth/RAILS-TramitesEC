@@ -1,12 +1,8 @@
-#Seed Rols
-Rol.create(name: "Administrador", active: true)
-Rol.create(name: "Usuario", active: true)
-
 # Seed Users
-User.create(username: "John Palacios", email: "admin@test.com", password: "123456", active: true)
-User.create(username: "Ericka Contreras", email: "ericka.c@test.com", password: "123456", active: true)
-User.create(username: "William Briones", email: "william.b@test.com", password: "123456", active: true)
-User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456", active: true)
+User.create(username: "William Briones", email: "william.b@test.com", password: "123456", is_admin: true,  active: true)
+User.create(username: "John Palacios", email: "admin@test.com", password: "123456", is_admin: false, active: true)
+User.create(username: "Ericka Contreras", email: "ericka.c@test.com", password: "123456", is_admin: false,  active: true)
+User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456", is_admin: false, active: true)
 
 
 # Seed Processors with Faker data
