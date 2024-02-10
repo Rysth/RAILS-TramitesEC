@@ -8,6 +8,10 @@ class Api::V1::UsersController < ApplicationController
 
   def show
     @user = current_devise_api_user
-    render json: @user, status: :ok
+    render json:  {
+      id: @user.id,
+      username: @user.username,
+      is_admin: @user.is_admin
+    }, status: :ok
   end
 end
