@@ -8,6 +8,6 @@ class Customer < ApplicationRecord
   validates :last_name, presence: true
   validates :phone, presence: true, numericality: { only_integer: true }
   validates :email, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[^@\s]+@[^@\s]+\z/ }
-  validates :is_admin, inclusion: { in: [true, false] }
+  validates :is_direct, inclusion: { in: [true, false] }
   validates :active, inclusion: { in: [true, false] }
 end

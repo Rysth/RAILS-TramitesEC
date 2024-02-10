@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_02_10_192250) do
+ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,16 +52,35 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_192250) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "license_type_id"
-    t.index ["license_type_id"], name: "index_license_types_on_license_type_id"
     t.index ["name"], name: "index_license_types_on_name", unique: true
   end
 
   create_table "licenses", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "active", default: true
+    t.bigint "license_type_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["license_type_id"], name: "index_licenses_on_license_type_id"
+  end
+
+  create_table "payment_types", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.date "date", null: false
+    t.float "value", null: false
+    t.string "receipt_number"
+    t.bigint "payment_type_id", null: false
+    t.bigint "procedure_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payment_type_id"], name: "index_payments_on_payment_type_id"
+    t.index ["procedure_id"], name: "index_payments_on_procedure_id"
   end
 
   create_table "procedure_sub_types", force: :cascade do |t|
@@ -80,6 +99,33 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_192250) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_procedure_types_on_name", unique: true
+  end
+
+  create_table "procedures", force: :cascade do |t|
+    t.string "code", null: false
+    t.date "date", null: false
+    t.string "plate"
+    t.float "cost", null: false
+    t.float "cost_pending", null: false
+    t.float "profit", null: false
+    t.float "profit_pending", null: false
+    t.text "comments"
+    t.boolean "is_paid", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.bigint "user_id", null: false
+    t.bigint "processor_id"
+    t.bigint "customer_id", null: false
+    t.bigint "procedure_type_id", null: false
+    t.bigint "status_id", null: false
+    t.bigint "license_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["customer_id"], name: "index_procedures_on_customer_id"
+    t.index ["license_id"], name: "index_procedures_on_license_id"
+    t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
+    t.index ["processor_id"], name: "index_procedures_on_processor_id"
+    t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["user_id"], name: "index_procedures_on_user_id"
   end
 
   create_table "processors", force: :cascade do |t|
@@ -120,7 +166,15 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_192250) do
 
   add_foreign_key "customers", "processors"
   add_foreign_key "customers", "users"
-  add_foreign_key "license_types", "license_types"
+  add_foreign_key "licenses", "license_types"
+  add_foreign_key "payments", "payment_types"
+  add_foreign_key "payments", "procedures"
   add_foreign_key "procedure_sub_types", "procedure_types"
+  add_foreign_key "procedures", "customers"
+  add_foreign_key "procedures", "licenses"
+  add_foreign_key "procedures", "procedure_types"
+  add_foreign_key "procedures", "processors"
+  add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
 end

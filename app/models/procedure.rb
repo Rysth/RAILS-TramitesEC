@@ -1,30 +1,33 @@
 class Procedure < ApplicationRecord
-  belongs_to :processor
-  belongs_to :customer
   belongs_to :user
-  belongs_to :type
-  belongs_to :license
+  belongs_to :customer
+  belongs_to :procedure_type, class_name: "ProcedureType"
   belongs_to :status
+  belongs_to :license, optional: true
+  belongs_to :processor, optional: true
 
-  validates :codigo, presence: true, uniqueness: true
-  validates :fecha, presence: true
-  validates :valor, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :valor_pendiente, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :ganancia, presence: true, numericality: { greater_than_or_equal_to: 0 }
-  validates :ganancia_pendiente, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  has_many :payments
 
-  validates :user, :processor, :customer, :type, :license, :status, presence: true
+  validates :code, presence: true, uniqueness: true
+  validates :date, presence: true
+  validates :cost, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :cost_pending, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :profit, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :profit_pending, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :is_paid, inclusion: { in: [true, false] }
 
-  before_validation :generate_codigo, on: :create
-  before_validation :set_fecha, on: :create
+  validates :user, :customer, :procedure_type, :status, presence: true
 
-  def generate_codigo
+  before_validation :generate_code, on: :create
+  before_validation :set_date, on: :create
+
+  def generate_code
     last_procedure = Procedure.last
-    last_number = last_procedure&.codigo&.match(/\d+/)&.[](0).to_i || 0
-    self.codigo = "TEC#{format('%07d', last_number + 1)}"
+    last_number = last_procedure&.code&.match(/\d+/)&.[](0).to_i || 0
+    self.code = "TEC#{format('%07d', last_number + 1)}"
   end
 
-  def set_fecha
-    self.fecha = Time.zone.now
+  def set_date
+    self.date = Time.zone.now
   end
 end

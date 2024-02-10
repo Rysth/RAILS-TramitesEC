@@ -12,7 +12,7 @@ User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", passwor
     last_name: Faker::Name.last_name,
     phone: Faker::Number.number(digits: 10),
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    id_user: User.ids.sample
+    user_id: User.ids.sample
   )
 end
 
@@ -27,8 +27,8 @@ end
     address: Faker::Address.street_address,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     is_direct: Faker::Boolean.boolean(true_ratio: 0.8),
-    id_processor: Processor.ids.sample,
-    id_user: User.ids.sample
+    processor_id: Processor.ids.sample,
+    user_id: User.ids.sample
   )
 end
 
@@ -57,15 +57,15 @@ ProcedureType.create(name: "Tipo de Sangre", active: true, has_children: false)
 ProcedureType.create(name: "CUV", active: true, has_children: false)
 
 # Seed ProcedureSubTypes
-ProcedureSubType.create(name: "Visual", active: true, id_procedure_type: 1)
-ProcedureSubType.create(name: "Comercial Técnica", active: true, id_procedure_type: 1)
-ProcedureSubType.create(name: "Técnica", active: true, id_procedure_type: 1)
-ProcedureSubType.create(name: "Vehículo", active: true, id_procedure_type: 10)
-ProcedureSubType.create(name: "Licencia", active: true, id_procedure_type: 10)
-ProcedureSubType.create(name: "Por Deuda", active: true, id_procedure_type: 17)
-ProcedureSubType.create(name: "Inactividad", active: true, id_procedure_type: 17)
-ProcedureSubType.create(name: "Vehículo Dado de Baja", active: true, id_procedure_type: 17)
-ProcedureSubType.create(name: "Transferencia de Dominio", active: true, id_procedure_type: 17)
+ProcedureSubType.create(name: "Visual", active: true, procedure_type_id: 1)
+ProcedureSubType.create(name: "Comercial Técnica", active: true, procedure_type_id: 1)
+ProcedureSubType.create(name: "Técnica", active: true, procedure_type_id: 1)
+ProcedureSubType.create(name: "Vehículo", active: true, procedure_type_id: 10)
+ProcedureSubType.create(name: "Licencia", active: true, procedure_type_id: 10)
+ProcedureSubType.create(name: "Por Deuda", active: true, procedure_type_id: 17)
+ProcedureSubType.create(name: "Inactividad", active: true, procedure_type_id: 17)
+ProcedureSubType.create(name: "Vehículo Dado de Baja", active: true, procedure_type_id: 17)
+ProcedureSubType.create(name: "Transferencia de Dominio", active: true, procedure_type_id: 17)
 
 # Seed LicenseTypes
 LicenseType.create(name: "No Profesionales", active: true)
@@ -73,15 +73,15 @@ LicenseType.create(name: "Profesionales", active: true)
 LicenseType.create(name: "Especiales", active: true)
 
 # Seed Licenses
-License.create(name: "A", active: true, id_license_type: 1)
-License.create(name: "B", active: true, id_license_type: 1)
-License.create(name: "C", active: true, id_license_type: 2)
-License.create(name: "D", active: true, id_license_type: 2)
-License.create(name: "E", active: true, id_license_type: 2)
-License.create(name: "A1", active: true, id_license_type: 3)
-License.create(name: "C1", active: true, id_license_type: 3)
-License.create(name: "E1", active: true, id_license_type: 3)
-License.create(name: "G", active: true, id_license_type: 3)
+License.create(name: "A", active: true, license_type_id: 1)
+License.create(name: "B", active: true, license_type_id: 1)
+License.create(name: "C", active: true, license_type_id: 2)
+License.create(name: "D", active: true, license_type_id: 2)
+License.create(name: "E", active: true, license_type_id: 2)
+License.create(name: "A1", active: true, license_type_id: 3)
+License.create(name: "C1", active: true, license_type_id: 3)
+License.create(name: "E1", active: true, license_type_id: 3)
+License.create(name: "G", active: true, license_type_id: 3)
 
 # Seed Statuses
 Status.create(name: "En Proceso")
@@ -89,9 +89,14 @@ Status.create(name: "Entregado Proveedor")
 Status.create(name: "Envíado Brevetar") # Ej: Es un ingreso (Renovación, significa que me entrego una documentación) Paso Opcional
 Status.create(name: "Entregado Cliente")
 
-# Seed Procedures with Faker data
+# Seed Payments
+PaymentType.create(name: "Efectivo")
+PaymentType.create(name: "Transferencia Bancaria")
+PaymentType.create(name: "Depósito")
+
+# Seed Procedures with Faker data and create payments
 10.times do
-  Procedure.create(
+  procedure = Procedure.create(
     cost: Faker::Number.decimal(l_digits: 3, r_digits: 2),
     cost_pending: Faker::Number.decimal(l_digits: 2, r_digits: 2),
     plate: Faker::Vehicle.license_plate,
@@ -100,11 +105,20 @@ Status.create(name: "Entregado Cliente")
     comments: Faker::Lorem.sentence,
     is_paid: Faker::Boolean.boolean(true_ratio: 0.8),
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    id_user: User.ids.sample,
-    id_processor: Processor.ids.sample,
-    id_customer: Customer.ids.sample,
-    id_procedure_type: ProcedureType.ids.sample,
-    id_status: Status.ids.sample
-    id_license: License.ids.sample,
+    user_id: User.ids.sample,
+    processor_id: Processor.ids.sample,
+    customer_id: Customer.ids.sample,
+    procedure_type_id: ProcedureType.ids.sample,
+    status_id: Status.ids.sample,
+    license_id: License.ids.sample
+  )
+  
+  # Create a payment for each procedure
+  Payment.create(
+    date: Faker::Date.between(from: 1.year.ago, to: Date.today),
+    value: procedure.cost,
+    receipt_number: Faker::Invoice.reference,
+    payment_type_id: PaymentType.ids.sample,
+    procedure_id: procedure.id
   )
 end
