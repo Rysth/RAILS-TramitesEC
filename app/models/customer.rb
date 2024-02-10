@@ -1,6 +1,6 @@
 class Customer < ApplicationRecord
   belongs_to :user
-  belongs_to :processor, counter_cache: true
+  belongs_to :processor, optional: true, counter_cache: true
   has_many :procedures
 
   validates :identification, presence: true, uniqueness: { case_sensitive: false }, numericality: { only_integer: true }

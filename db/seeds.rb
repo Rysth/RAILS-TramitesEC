@@ -1,6 +1,5 @@
 # Seed Users
 User.create(username: "William Briones", email: "william.b@test.com", password: "123456", is_admin: true,  active: true)
-User.create(username: "John Palacios", email: "admin@test.com", password: "123456", is_admin: false, active: true)
 User.create(username: "Ericka Contreras", email: "ericka.c@test.com", password: "123456", is_admin: false,  active: true)
 User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456", is_admin: false, active: true)
 
@@ -26,7 +25,7 @@ end
     email: Faker::Internet.email,
     address: Faker::Address.street_address,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
-    is_direct: Faker::Boolean.boolean(true_ratio: 0.8),
+    is_direct: Faker::Boolean.boolean(true_ratio: 0.2),
     processor_id: Processor.ids.sample,
     user_id: User.ids.sample
   )
@@ -94,8 +93,10 @@ PaymentType.create(name: "Efectivo")
 PaymentType.create(name: "Transferencia Bancaria")
 PaymentType.create(name: "Depósito")
 
-# Seed Procedures with Faker data and create payments
-10.times do
+1000.times do
+  customer = Customer.find(Customer.ids.sample)
+  processor_id = customer.is_direct? ? nil : Processor.ids.sample
+
   procedure = Procedure.create(
     cost: Faker::Number.decimal(l_digits: 3, r_digits: 2),
     cost_pending: Faker::Number.decimal(l_digits: 2, r_digits: 2),
@@ -106,8 +107,8 @@ PaymentType.create(name: "Depósito")
     is_paid: Faker::Boolean.boolean(true_ratio: 0.8),
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     user_id: User.ids.sample,
-    processor_id: Processor.ids.sample,
-    customer_id: Customer.ids.sample,
+    processor_id: processor_id, # Save processor_id based on customer's is_direct attribute
+    customer_id: customer.id,
     procedure_type_id: ProcedureType.ids.sample,
     status_id: Status.ids.sample,
     license_id: License.ids.sample

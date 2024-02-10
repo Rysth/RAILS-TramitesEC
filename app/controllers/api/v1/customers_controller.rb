@@ -10,25 +10,41 @@ class Api::V1::CustomersController < ApplicationController
     page = params[:page].to_i || 1
     per_page = 10
   
-    procedures = @customer.procedures.includes(:processor, :status, :type, :user)
+    procedures = @customer.procedures.includes(:status, :procedure_type, :user)
                   .order(created_at: :desc).page(page).per(per_page)
-    completed_procedures = @customer.procedures.where(status_id: 4, is_paid: true)
+    completed_procedures = procedures.where(status_id: 4, is_paid: true)
     total_valores = completed_procedures.sum(:cost)
     total_ganancias = completed_procedures.sum(:profit)
-    total_tramites = @customer.procedures.count
+    total_tramites = procedures.count
     total_tramites_finalizados = completed_procedures.count
   
     total_pages = procedures.total_pages
+  
+    customer_data = {
+      first_name: @customer.first_name,
+      last_name: @customer.last_name
+    }
+  
+    # Include processor information only if the customer is not direct and has a processor
+    processor_data = if !@customer.is_direct? && @customer.processor.present?
+                       {
+                         id: @customer.processor.id,
+                         first_name: @customer.processor.first_name,
+                         last_name: @customer.processor.last_name
+                       }
+                     else
+                       nil
+                     end
   
     render json: {
       procedures: procedures.as_json(include: { 
         customer: { only: [:id, :first_name, :last_name] },
         status: { only: [:id, :name] },
-        type: { only: :name },
-        processor: { only: [:id, :first_name, :last_name] },
+        procedure_type: { only: :name },
+        processor: processor_data,
         user: { only: [:username] }
       }),
-      customer: @customer.as_json(only: [:first_name, :last_name]),
+      customer: customer_data,
       customer_stats: {
         valores: total_valores,
         ganancias: total_ganancias,
@@ -41,12 +57,13 @@ class Api::V1::CustomersController < ApplicationController
       }
     }, status: :ok
   end
+  
 
   def create
     @customer = Customer.new(customer_params)
     @customer.user_id = current_devise_api_user.id
 
-    if @customer.save
+    if @customer.save!
       render json: customer_data(@customer), status: :created
     else
       render json: @customer.errors, status: :unprocessable_entity
@@ -54,6 +71,14 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def update
+    # Check if the customer is direct
+    is_direct = params.dig(:customer, :is_direct)
+
+    # If the customer is direct, remove the processor_id from the params
+    if is_direct
+      customer_params.delete(:processor_id)
+    end
+
     if @customer.update(customer_params)
       render json: customer_data(@customer), status: :ok
     else
@@ -80,7 +105,7 @@ class Api::V1::CustomersController < ApplicationController
   def render_customers_response
     customers = all_customers
     render json: {
-      customers: customers.as_json(include: { processor: { only: %i[id identification first_name last_name phone] }, user: { only: %i[id username] } }),
+      customers: customers.as_json(include: { processor: { only: %i[id code first_name last_name phone] }, user: { only: %i[id username] } }),
       pagination: {
         total_pages: customers.total_pages,
         current_page: customers.current_page,
@@ -117,6 +142,6 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def customer_params
-    params.require(:customer).permit(:id, :identification, :first_name, :last_name, :phone, :direccion, :email, :active, :processor_id)
+    params.require(:customer).permit(:id, :identification, :first_name, :last_name, :phone, :address, :email, :active, :processor_id, :is_direct)
   end
 end

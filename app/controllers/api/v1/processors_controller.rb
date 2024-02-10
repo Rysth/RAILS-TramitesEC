@@ -10,7 +10,7 @@ class Api::V1::ProcessorsController < ApplicationController
     page = params[:page].to_i || 1
     per_page = 10
   
-    procedures = @processor.procedures.includes(:customer, :status, :type, :user)
+    procedures = @processor.procedures.includes(:customer, :status, :procedure_type, :user)
                   .order(created_at: :desc).page(page).per(per_page)
     completed_procedures = @processor.procedures.where(status_id: 4, is_paid: true)
     total_valores = completed_procedures.sum(:cost)
@@ -24,7 +24,7 @@ class Api::V1::ProcessorsController < ApplicationController
       procedures: procedures.as_json(include: { 
         customer: { only: [:id, :first_name, :last_name] },
         status: { only: [:id, :name] },
-        type: { only: :name },
+        procedure_type: { only: :name },
         processor: { only: [:first_name, :last_name] },
         user: { only: [:username] }
       }),
