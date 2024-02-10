@@ -1,12 +1,12 @@
 class Processor < ApplicationRecord
   belongs_to :user
-  has_many :procedures
   has_many :customers, counter_cache: true
+  has_many :procedures
 
   validates :code, presence: true, uniqueness: { case_sensitive: false }
-  validates :nombres, presence: true
-  validates :apellidos, presence: true
-  validates :celular, presence: true, numericality: { only_integer: true }
+  validates :first_name, presence: true
+  validates :last_name, presence: true
+  validates :phone, presence: true, numericality: { only_integer: true }
   validates :active, inclusion: { in: [true, false] }
 
   before_validation :generate_code, on: :create
