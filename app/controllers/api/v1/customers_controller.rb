@@ -12,9 +12,9 @@ class Api::V1::CustomersController < ApplicationController
   
     procedures = @customer.procedures.includes(:processor, :status, :type, :user)
                   .order(created_at: :desc).page(page).per(per_page)
-    completed_procedures = @customer.procedures.where(status_id: 3, valor_pendiente: 0, ganancia_pendiente: 0)
-    total_valores = completed_procedures.sum(:valor)
-    total_ganancias = completed_procedures.sum(:ganancia)
+    completed_procedures = @customer.procedures.where(status_id: 4, is_paid: true)
+    total_valores = completed_procedures.sum(:cost)
+    total_ganancias = completed_procedures.sum(:profit)
     total_tramites = @customer.procedures.count
     total_tramites_finalizados = completed_procedures.count
   
@@ -22,13 +22,13 @@ class Api::V1::CustomersController < ApplicationController
   
     render json: {
       procedures: procedures.as_json(include: { 
-        customer: { only: [:id, :nombres, :apellidos] },
-        status: { only: [:id, :nombre] },
-        type: { only: :nombre },
-        processor: { only: [:id, :nombres, :apellidos] },
+        customer: { only: [:id, :first_name, :last_name] },
+        status: { only: [:id, :name] },
+        type: { only: :name },
+        processor: { only: [:id, :first_name, :last_name] },
         user: { only: [:username] }
       }),
-      customer: @customer.as_json(only: [:nombres, :apellidos]),
+      customer: @customer.as_json(only: [:first_name, :last_name]),
       customer_stats: {
         valores: total_valores,
         ganancias: total_ganancias,
@@ -72,7 +72,7 @@ class Api::V1::CustomersController < ApplicationController
   def search_from_procedures
     query = params[:query]
     customers = Customer.where('LOWER(identification) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
-    render json: customers.as_json(only: %i[id cedula nombres apellidos])
+    render json: customers.as_json(only: %i[id identification first_name last_name])
   end
 
   private
@@ -80,7 +80,7 @@ class Api::V1::CustomersController < ApplicationController
   def render_customers_response
     customers = all_customers
     render json: {
-      customers: customers.as_json(include: { processor: { only: %i[id nombres apellidos celular] }, user: { only: %i[id username] } }),
+      customers: customers.as_json(include: { processor: { only: %i[id identification first_name last_name phone] }, user: { only: %i[id username] } }),
       pagination: {
         total_pages: customers.total_pages,
         current_page: customers.current_page,
@@ -96,7 +96,7 @@ class Api::V1::CustomersController < ApplicationController
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      customers = customers.where('LOWER(cedula) LIKE :search OR LOWER(CONCAT(nombres, \' \', apellidos)) LIKE :search', search: search_term)
+      customers = customers.where('LOWER(identification) LIKE :search OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :search', search: search_term)
     end
 
     customers = customers.where(user_id: params[:userId]) if params[:userId].present?
@@ -110,13 +110,13 @@ class Api::V1::CustomersController < ApplicationController
   def customer_data(customer)
     customer.as_json(
       include: {
-        processor: { only: %i[id codigo nombres apellidos] },
+        processor: { only: %i[id code first_name last_name] },
         user: { only: %i[id username] }
       }
     )
   end
 
   def customer_params
-    params.require(:customer).permit(:id, :cedula, :nombres, :apellidos, :celular, :direccion, :email, :active, :processor_id)
+    params.require(:customer).permit(:id, :identification, :first_name, :last_name, :phone, :direccion, :email, :active, :processor_id)
   end
 end

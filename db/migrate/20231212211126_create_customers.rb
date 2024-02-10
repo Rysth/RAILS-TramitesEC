@@ -1,12 +1,13 @@
 class CreateCustomers < ActiveRecord::Migration[7.1]
   def change
     create_table :customers do |t|
-      t.string :cedula, null: false
-      t.string :nombres, null: false
-      t.string :apellidos, null: false
-      t.string :celular, null: false
-      t.string :direccion, null: false
+      t.string :identification, null: false
+      t.string :first_name, null: false
+      t.string :last_name, null: false
+      t.string :phone, null: false
       t.string :email, null: false
+      t.string :address, default: ''
+      t.boolean :is_direct, default: false
       t.boolean :active, default: true
 
       t.timestamps
