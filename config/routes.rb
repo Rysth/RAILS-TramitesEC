@@ -12,8 +12,8 @@ Rails.application.routes.draw do
       resources :procedure_sub_types, only: [:index]
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
-      resources :procedures
       resources :statuses, only: [:index]
+      resources :procedures
     end
   end
 end

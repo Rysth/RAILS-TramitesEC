@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_02_10_191022) do
+ActiveRecord::Schema[7.1].define(version: 2024_02_10_192250) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,7 +52,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_191022) do
     t.boolean "active", default: true
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "license_type_id"
+    t.index ["license_type_id"], name: "index_license_types_on_license_type_id"
     t.index ["name"], name: "index_license_types_on_name", unique: true
+  end
+
+  create_table "licenses", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "procedure_sub_types", force: :cascade do |t|
@@ -86,6 +95,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_191022) do
     t.index ["user_id"], name: "index_processors_on_user_id"
   end
 
+  create_table "statuses", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_statuses_on_name", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "email", default: "", null: false
@@ -103,6 +120,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_191022) do
 
   add_foreign_key "customers", "processors"
   add_foreign_key "customers", "users"
+  add_foreign_key "license_types", "license_types"
   add_foreign_key "procedure_sub_types", "procedure_types"
   add_foreign_key "processors", "users"
 end

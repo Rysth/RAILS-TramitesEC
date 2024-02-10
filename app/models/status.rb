@@ -1,4 +1,6 @@
 class Status < ApplicationRecord
   has_many :procedures
-  validates :nombre, presence: true, uniqueness: { case_sensitive: true }
+  # Validations
+  validates :name, presence: true, uniqueness: true
+  validates :active, inclusion: { in: [true, false] }
 end
