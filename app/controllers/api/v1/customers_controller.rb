@@ -9,14 +9,21 @@ class Api::V1::CustomersController < ApplicationController
   def show
     page = params[:page].to_i || 1
     per_page = 10
-  
-    procedures = @customer.procedures.includes(:status, :procedure_type, :user)
-                  .order(created_at: :desc).page(page).per(per_page)
-    completed_procedures = procedures.where(status_id: 4, is_paid: true)
-    total_valores = completed_procedures.sum(:cost)
-    total_ganancias = completed_procedures.sum(:profit)
-    total_tramites = procedures.count
-    total_tramites_finalizados = completed_procedures.count
+
+    # Check if total values are already calculated
+    if @total_valores.nil? || @total_ganancias.nil? || @total_tramites.nil? || @total_tramites_finalizados.nil?
+      # Calculate total values only if not already calculated
+      completed_procedure_ids = @customer.procedures.where(status_id: 4, is_paid: true).pluck(:id)
+      @total_valores = Procedure.where(id: completed_procedure_ids).sum(:cost)
+      @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
+      @total_tramites = @customer.procedures.count
+      @total_tramites_finalizados = completed_procedure_ids.count
+    end
+
+    procedures = @customer.procedures.includes(:status, :procedure_type, :user, :processor)
+                   .order(created_at: :desc)
+                   .page(page)
+                   .per(per_page)
   
     total_pages = procedures.total_pages
   
@@ -32,24 +39,22 @@ class Api::V1::CustomersController < ApplicationController
                          first_name: @customer.processor.first_name,
                          last_name: @customer.processor.last_name
                        }
-                     else
-                       nil
                      end
   
     render json: {
       procedures: procedures.as_json(include: { 
-        customer: { only: [:id, :first_name, :last_name] },
-        status: { only: [:id, :name] },
-        procedure_type: { only: :name },
-        processor: processor_data,
-        user: { only: [:username] }
-      }),
+                                     customer: { only: %i[id first_name last_name] },
+                                     status: { only: %i[id name] },
+                                     procedure_type: { only: :name },
+                                     processor: processor_data,
+                                     user: { only: [:username] }
+                                   }),
       customer: customer_data,
       customer_stats: {
-        valores: total_valores,
-        ganancias: total_ganancias,
-        tramites: total_tramites,
-        tramites_finalizados: total_tramites_finalizados,
+        valores: @total_valores,
+        ganancias: @total_ganancias,
+        tramites: @total_tramites,
+        tramites_finalizados: @total_tramites_finalizados,
       },
       pagination: {
         total_pages: total_pages,
@@ -57,7 +62,6 @@ class Api::V1::CustomersController < ApplicationController
       }
     }, status: :ok
   end
-  
 
   def create
     @customer = Customer.new(customer_params)
@@ -75,9 +79,7 @@ class Api::V1::CustomersController < ApplicationController
     is_direct = params.dig(:customer, :is_direct)
 
     # If the customer is direct, remove the processor_id from the params
-    if is_direct
-      customer_params.delete(:processor_id)
-    end
+    customer_params.delete(:processor_id) if is_direct
 
     if @customer.update(customer_params)
       render json: customer_data(@customer), status: :ok
