@@ -30,4 +30,10 @@ class Procedure < ApplicationRecord
   def set_date
     self.date = Time.zone.now
   end
+
+  before_save :update_is_paid_status
+
+  def update_is_paid_status
+    self.is_paid = true if cost_pending.zero? && profit_pending.zero?
+  end
 end

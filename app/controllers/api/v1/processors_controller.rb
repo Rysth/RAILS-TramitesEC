@@ -9,36 +9,39 @@ class Api::V1::ProcessorsController < ApplicationController
   def show
     page = params[:page].to_i || 1
     per_page = 10
-  
+
     procedures = @processor.procedures.includes(:customer, :status, :procedure_type, :user)
-                  .order(created_at: :desc).page(page).per(per_page)
-    completed_procedures = @processor.procedures.where(status_id: 4, is_paid: true)
-  
+      .order(created_at: :desc).page(page).per(per_page)
+    completed_procedures = @processor.procedures.where(status_id: [3, 4], is_paid: true)
+
     # Calculate total values only if they haven't been calculated before
     if @total_valores.nil? || @total_ganancias.nil? ||
        @total_clientes.nil? || @total_tramites.nil?
       calculate_total_values(completed_procedures)
     end
-  
+
     total_pages = procedures.total_pages
-  
+
     render json: {
       procedures: procedures.as_json(include: { 
-        customer: { only: %i[id first_name last_name] },
-        status: { only: %i[id name] },
-        procedure_type: { only: :name },
-        processor: { only: %i[first_name last_name] },
-        user: { only: [:username] }
-      }),
+                                       customer: { only: %i[id first_name last_name] },
+                                       status: { only: %i[id name] },
+                                       procedure_type: { only: :name },
+                                       processor: { only: %i[first_name last_name] },
+                                       user: { only: [:username] }
+                                     }),
       processor: @processor.as_json(only: %i[first_name last_name]),
       processor_stats: {
         valores: @total_valores,
         ganancias: @total_ganancias,
         clientes: @total_clientes,
         tramites: @total_tramites,
+        tramites_proceso: @total_tramites_proceso,
+        tramites_proveedor: @total_tramites_proveedor,
+        tramites_finalizados: @total_tramites_finalizados
       },
       pagination: {
-        total_pages: total_pages,
+        total_pages:,
         current_page: page
       }
     }, status: :ok
@@ -86,6 +89,9 @@ class Api::V1::ProcessorsController < ApplicationController
     @total_ganancias = completed_procedures.sum(:profit)
     @total_clientes = @processor.customers.count
     @total_tramites = @processor.procedures.count
+    @total_tramites_proceso = @processor.procedures.where(status_id: 1).count
+    @total_tramites_proveedor = @processor.procedures.where(status_id: 2).count
+    @total_tramites_finalizados = @processor.procedures.where(status_id: [3, 4]).count
   end
 
   def customers?

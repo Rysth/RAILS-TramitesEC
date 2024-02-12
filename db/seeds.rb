@@ -85,7 +85,7 @@ License.create(name: "G", active: true, license_type_id: 3)
 # Seed Statuses
 Status.create(name: "En Proceso")
 Status.create(name: "Entregado Proveedor")
-Status.create(name: "Envíado Brevetar") # Ej: Es un ingreso (Renovación, significa que me entrego una documentación) Paso Opcional
+Status.create(name: "Envíado Brevetar") # Ej: Es un ingreso (Renovación, significa que me entrego una documentación) Paso Opcional va en relación con el Usuario Directo
 Status.create(name: "Entregado Cliente")
 
 # Seed Payments
@@ -97,29 +97,44 @@ PaymentType.create(name: "Depósito")
   customer = Customer.find(Customer.ids.sample)
   processor_id = customer.is_direct? ? nil : Processor.ids.sample
 
+  cost = Faker::Number.decimal(l_digits: 3, r_digits: 2)
+  profit = Faker::Number.decimal(l_digits: 2, r_digits: 2)
+  cost_pending = cost
+  profit_pending = profit
+
   procedure = Procedure.create(
-    cost: Faker::Number.decimal(l_digits: 3, r_digits: 2),
-    cost_pending: Faker::Number.decimal(l_digits: 2, r_digits: 2),
+    cost: cost,
+    cost_pending: cost_pending,
     plate: Faker::Vehicle.license_plate,
-    profit: Faker::Number.decimal(l_digits: 2, r_digits: 2),
-    profit_pending: Faker::Number.decimal(l_digits: 2, r_digits: 2),
+    profit: profit,
+    profit_pending: profit_pending,
     comments: Faker::Lorem.sentence,
-    is_paid: Faker::Boolean.boolean(true_ratio: 0.8),
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     user_id: User.ids.sample,
-    processor_id: processor_id, # Save processor_id based on customer's is_direct attribute
+    processor_id: processor_id,
     customer_id: customer.id,
     procedure_type_id: ProcedureType.ids.sample,
     status_id: Status.ids.sample,
     license_id: License.ids.sample
   )
   
-  # Create a payment for each procedure
-  Payment.create(
-    date: Faker::Date.between(from: 1.year.ago, to: Date.today),
-    value: procedure.cost,
-    receipt_number: Faker::Invoice.reference,
-    payment_type_id: PaymentType.ids.sample,
-    procedure_id: procedure.id
-  )
+  # Create payments and update cost_pending and profit_pending accordingly
+  payment_value = procedure.cost
+  while payment_value > 0
+    payment_value -= procedure.cost_pending
+    if payment_value >= 0
+      procedure.cost_pending = 0
+      procedure.profit_pending = 0
+    else
+      procedure.cost_pending -= payment_value.abs
+      procedure.profit_pending -= payment_value.abs * (profit / cost)
+    end
+    Payment.create(
+      date: Faker::Date.between(from: 1.year.ago, to: Date.today),
+      value: payment_value > 0 ? procedure.cost_pending : payment_value.abs,
+      receipt_number: Faker::Invoice.reference,
+      payment_type_id: PaymentType.ids.sample,
+      procedure_id: procedure.id
+    )
+  end
 end

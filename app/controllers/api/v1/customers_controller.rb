@@ -9,17 +9,12 @@ class Api::V1::CustomersController < ApplicationController
   def show
     page = params[:page].to_i || 1
     per_page = 10
-
+  
     # Check if total values are already calculated
     if @total_valores.nil? || @total_ganancias.nil? || @total_tramites.nil? || @total_tramites_finalizados.nil?
-      # Calculate total values only if not already calculated
-      completed_procedure_ids = @customer.procedures.where(status_id: 4, is_paid: true).pluck(:id)
-      @total_valores = Procedure.where(id: completed_procedure_ids).sum(:cost)
-      @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
-      @total_tramites = @customer.procedures.count
-      @total_tramites_finalizados = completed_procedure_ids.count
+      calculate_total_values
     end
-
+  
     procedures = @customer.procedures.includes(:status, :procedure_type, :user, :processor)
                    .order(created_at: :desc)
                    .page(page)
@@ -55,6 +50,9 @@ class Api::V1::CustomersController < ApplicationController
         ganancias: @total_ganancias,
         tramites: @total_tramites,
         tramites_finalizados: @total_tramites_finalizados,
+        tramites_proceso: @total_tramites_proceso,
+        tramites_proveedor: @total_tramites_proveedor,
+        tramites_pendientes: @total_tramites_pendientes,
       },
       pagination: {
         total_pages: total_pages,
@@ -103,6 +101,17 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   private
+
+  def calculate_total_values
+    completed_procedure_ids = @customer.procedures.where(status_id: [3, 4]).pluck(:id)
+    @total_valores = Procedure.where(id: completed_procedure_ids).sum(:cost)
+    @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
+    @total_tramites = @customer.procedures.count
+    @total_tramites_proceso = @customer.procedures.where(status_id: 1).count
+    @total_tramites_proveedor = @customer.procedures.where(status_id: 2).count
+    @total_tramites_pendientes = @customer.procedures.where(is_paid: false).count
+    @total_tramites_finalizados = completed_procedure_ids.count
+  end
 
   def render_customers_response
     customers = all_customers
