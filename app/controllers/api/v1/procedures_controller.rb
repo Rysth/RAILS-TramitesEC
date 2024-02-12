@@ -58,11 +58,11 @@ class Api::V1::ProceduresController < ApplicationController
     procedure.as_json(
       include: {
         user: { only: %i[id username] },
-        customer: { only: %i[id cedula nombres apellidos] },
-        processor: { only: %i[id codigo nombres apellidos] },
-        type: { only: %i[id nombre] },
-        license: { only: %i[id nombre] },
-        status: { only: %i[id nombre] }
+        customer: { only: %i[id identification first_name last_name is_direct] },
+        processor: { only: %i[id code first_name last_name] },
+        procedure_type: { only: %i[id name] },
+        license: { only: %i[id name] },
+        status: { only: %i[id name] }
       }
     )
   end
@@ -78,27 +78,28 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
-    procedures = Procedure.includes(:user, :customer, :processor, :type, :license, :status).order(created_at: :desc)
-
+    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(created_at: :desc)
+  
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:processor, :status, :customer)
+      procedures = procedures.joins(:status, :customer)
+      procedures = procedures.left_outer_joins(:processor) # Include customers without processors
       procedures = procedures.where(
-        'LOWER(procedures.codigo) LIKE :search OR ' \
-        'LOWER(CONCAT(processors.nombres, \' \', processors.apellidos)) LIKE :search OR ' \
-        'LOWER(CONCAT(customers.nombres, \' \', customers.apellidos)) LIKE :search OR ' \
-        'LOWER(statuses.nombre) LIKE :search',
+        'LOWER(procedures.code) LIKE :search OR ' \
+        'LOWER(CONCAT(processors.first_name, \' \', processors.last_name)) LIKE :search OR ' \
+        'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search OR ' \
+        'LOWER(statuses.name) LIKE :search',
         search: search_term
       )
     end
-
+  
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
     procedures.page(params[:page]).per(20)
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :placa, :valor, :valor_pendiente, :ganancia, :ganancia_pendiente, :observaciones, :type_id, :processor_id,
-                                      :customer_id, :license_id, :status_id)
+    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
+                                      :customer_id, :license_id, :status_id, payment_ids: [])
   end
 
   def set_procedure
