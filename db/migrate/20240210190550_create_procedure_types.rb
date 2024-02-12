@@ -3,7 +3,7 @@ class CreateProcedureTypes < ActiveRecord::Migration[7.1]
     create_table :procedure_types do |t|
       t.string :name, null: false
       t.boolean :active, default: true
-      t.boolean :has_children, default: false
+      t.boolean :has_licenses, default: false
 
       t.timestamps
     end

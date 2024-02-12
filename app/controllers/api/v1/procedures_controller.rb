@@ -1,7 +1,6 @@
 class Api::V1::ProceduresController < ApplicationController
   before_action :authenticate_devise_api_token!
   before_action :set_procedure, only: %i[show update destroy]
-  before_action :check_active_procedure, only: %i[create]
 
   def index
     render_procedures_response
@@ -67,16 +66,6 @@ class Api::V1::ProceduresController < ApplicationController
     )
   end
 
-  def check_active_procedure
-    customer_id = procedure_params[:customer_id]
-    active_status_ids = [1, 2] # Status IDs for active procedures
-
-    return unless Procedure.where(customer_id:, status_id: active_status_ids).exists?
-
-    render json: { error: 'The customer has an active procedure right now' }, status: :conflict
-    nil
-  end
-
   def all_procedures
     procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(created_at: :desc)
   
@@ -98,7 +87,7 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
+    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :procedure_sub_type_id, :processor_id, # rubocop:disable Layout/LineLength
                                       :customer_id, :license_id, :status_id, payment_ids: [])
   end
 

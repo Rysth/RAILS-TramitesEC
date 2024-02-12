@@ -11,7 +11,6 @@ Rails.application.routes.draw do
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
       resources :customers
       resources :procedure_types, only: [:index]
-      resources :procedure_sub_types, only: [:index]
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]

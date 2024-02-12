@@ -32,39 +32,28 @@ end
 end
 
 # Seed ProcedureTypes
-ProcedureType.create(name: "Revisión", active: true, has_children: true)
-ProcedureType.create(name: "Renovación", active: true, has_children: false)
-ProcedureType.create(name: "Título", active: true, has_children: false)  # Cursos Manejo (Primera Vez)
-ProcedureType.create(name: "Ingresos", active: true, has_children: false) # Casos de Usuarios Directos
-ProcedureType.create(name: "Recuperación de Puntos", active: true, has_children: false)
-ProcedureType.create(name: "Duplicado AAA", active: true, has_children: false)
-ProcedureType.create(name: "Duplicado de Licencia Original", active: true, has_children: false)
-ProcedureType.create(name: "Desbloqueo de Licencia", active: true, has_children: false)
-ProcedureType.create(name: "Licencia Anclada", active: true, has_children: false)
-ProcedureType.create(name: "Actualización de Datos", active: true, has_children: true)
-ProcedureType.create(name: "Observación Laminas Oscuras", active: true, has_children: false)
-ProcedureType.create(name: "Certificados sin Deuda", active: true, has_children: false)
-ProcedureType.create(name: "Certificados con Deuda", active: true, has_children: false)
-ProcedureType.create(name: "Revisión Transporte Público", active: true, has_children: false)
-ProcedureType.create(name: "Cambio de Propietario", active: true, has_children: false)
-ProcedureType.create(name: "Cambio de Color", active: true, has_children: false)
-ProcedureType.create(name: "Gravamen", active: true, has_children: true)
-ProcedureType.create(name: "Revisión ATM Particulares", active: true, has_children: false)
-ProcedureType.create(name: "Cambio de Comercial/Particular", active: true, has_children: false)
-ProcedureType.create(name: "Ingreso de Vehículo", active: true, has_children: false)
-ProcedureType.create(name: "Tipo de Sangre", active: true, has_children: false)
-ProcedureType.create(name: "CUV", active: true, has_children: false)
-
-# Seed ProcedureSubTypes
-ProcedureSubType.create(name: "Visual", active: true, procedure_type_id: 1)
-ProcedureSubType.create(name: "Comercial Técnica", active: true, procedure_type_id: 1)
-ProcedureSubType.create(name: "Técnica", active: true, procedure_type_id: 1)
-ProcedureSubType.create(name: "Vehículo", active: true, procedure_type_id: 10)
-ProcedureSubType.create(name: "Licencia", active: true, procedure_type_id: 10)
-ProcedureSubType.create(name: "Por Deuda", active: true, procedure_type_id: 17)
-ProcedureSubType.create(name: "Inactividad", active: true, procedure_type_id: 17)
-ProcedureSubType.create(name: "Vehículo Dado de Baja", active: true, procedure_type_id: 17)
-ProcedureSubType.create(name: "Transferencia de Dominio", active: true, procedure_type_id: 17)
+ProcedureType.create(name: "Revisión", active: true, has_licenses: false)
+ProcedureType.create(name: "Renovación", active: true, has_licenses: true )
+ProcedureType.create(name: "Título", active: true, has_licenses: true)  # Cursos Manejo (Primera Vez)
+ProcedureType.create(name: "Ingresos", active: true, has_licenses: true) # Casos de Usuarios Directos
+ProcedureType.create(name: "Recuperación de Puntos", active: true, has_licenses: false)
+ProcedureType.create(name: "Duplicado AAA", active: true, has_licenses: false)
+ProcedureType.create(name: "Duplicado de Licencia Original", active: true, has_licenses: false)
+ProcedureType.create(name: "Desbloqueo de Licencia", active: true, has_licenses: false)
+ProcedureType.create(name: "Licencia Anclada", active: true, has_licenses: false)
+ProcedureType.create(name: "Actualización de Datos", active: true, has_licenses: false)
+ProcedureType.create(name: "Observación Laminas Oscuras", active: true, has_licenses: false)
+ProcedureType.create(name: "Certificados sin Deuda", active: true, has_licenses: false)
+ProcedureType.create(name: "Certificados con Deuda", active: true, has_licenses: false)
+ProcedureType.create(name: "Revisión Transporte Público", active: true, has_licenses: false)
+ProcedureType.create(name: "Cambio de Propietario", active: true, has_licenses: false)
+ProcedureType.create(name: "Cambio de Color", active: true, has_licenses: false)
+ProcedureType.create(name: "Gravamen", active: true, has_licenses: false)
+ProcedureType.create(name: "Revisión ATM Particulares", active: true, has_licenses: false)
+ProcedureType.create(name: "Cambio de Comercial/Particular", active: true, has_licenses: false)
+ProcedureType.create(name: "Ingreso de Vehículo", active: true, has_licenses: false)
+ProcedureType.create(name: "Tipo de Sangre", active: true, has_licenses: false)
+ProcedureType.create(name: "CUV", active: true, has_licenses: false)
 
 # Seed LicenseTypes
 LicenseType.create(name: "No Profesionales", active: true)
@@ -93,29 +82,37 @@ PaymentType.create(name: "Efectivo")
 PaymentType.create(name: "Transferencia Bancaria")
 PaymentType.create(name: "Depósito")
 
-1000.times do
+500.times do
   customer = Customer.find(Customer.ids.sample)
   processor_id = customer.is_direct? ? nil : Processor.ids.sample
+
+  procedure_type_id = ProcedureType.ids.sample
+  procedure_type = ProcedureType.find(procedure_type_id)
 
   cost = Faker::Number.decimal(l_digits: 3, r_digits: 2)
   profit = Faker::Number.decimal(l_digits: 2, r_digits: 2)
   cost_pending = cost
   profit_pending = profit
 
+  license_id = procedure_type.has_license? ? License.ids.sample : nil
+
+  plate = procedure_type.id == 2 ? Faker::Vehicle.license_plate : nil
+  customer_id = procedure_type.id == 2 ? customer.id : nil
+
   procedure = Procedure.create(
     cost: cost,
     cost_pending: cost_pending,
-    plate: Faker::Vehicle.license_plate,
+    plate: plate,
     profit: profit,
     profit_pending: profit_pending,
     comments: Faker::Lorem.sentence,
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     user_id: User.ids.sample,
     processor_id: processor_id,
-    customer_id: customer.id,
-    procedure_type_id: ProcedureType.ids.sample,
+    customer_id: customer_id,
+    procedure_type_id: procedure_type_id,
     status_id: Status.ids.sample,
-    license_id: License.ids.sample
+    license_id: license_id
   )
   
   # Create payments and update cost_pending and profit_pending accordingly
@@ -137,4 +134,4 @@ PaymentType.create(name: "Depósito")
       procedure_id: procedure.id
     )
   end
-end
+end  

@@ -83,19 +83,11 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.index ["procedure_id"], name: "index_payments_on_procedure_id"
   end
 
-  create_table "procedure_sub_types", force: :cascade do |t|
-    t.string "name", null: false
-    t.boolean "active", default: true
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.bigint "procedure_type_id"
-    t.index ["procedure_type_id"], name: "index_procedure_sub_types_on_procedure_type_id"
-  end
-
   create_table "procedure_types", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "active", default: true
     t.boolean "has_children", default: false
+    t.boolean "has_licenses", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_procedure_types_on_name", unique: true
@@ -169,7 +161,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
   add_foreign_key "licenses", "license_types"
   add_foreign_key "payments", "payment_types"
   add_foreign_key "payments", "procedures"
-  add_foreign_key "procedure_sub_types", "procedure_types"
   add_foreign_key "procedures", "customers"
   add_foreign_key "procedures", "licenses"
   add_foreign_key "procedures", "procedure_types"
