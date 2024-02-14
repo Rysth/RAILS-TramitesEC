@@ -4,7 +4,7 @@ class Procedure < ApplicationRecord
   belongs_to :procedure_type, class_name: "ProcedureType"
   belongs_to :status
   belongs_to :license, optional: true
-  belongs_to :processor
+  belongs_to :processor, optional: true
 
   has_many :payments
 

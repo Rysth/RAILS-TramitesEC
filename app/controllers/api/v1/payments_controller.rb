@@ -1,6 +1,6 @@
 class Api::V1::PaymentsController < ApplicationController
   before_action :authenticate_devise_api_token!
-  before_action :set_payment, only: [:show, :update, :destroy]
+  before_action :set_payment, only: %i[update destroy]
 
   # GET /api/v1/payments
   def index
@@ -10,13 +10,21 @@ class Api::V1::PaymentsController < ApplicationController
 
   # GET /api/v1/payments/:id
   def show
-    render json: @payment
+    @payments = Payment.includes(:payment_type).where(procedure_id: params[:id]).all
+    render json: @payments, include: :payment_type
   end
 
   # POST /api/v1/payments
   def create
     @payment = Payment.new(payment_params)
     if @payment.save
+      procedure = Procedure.find(payment_params[:procedure_id])
+      if procedure.cost_pending.positive?
+        new_cost_pending = [0, procedure.cost_pending - @payment.value].max
+        procedure.update(cost_pending: new_cost_pending)
+      else
+        procedure.update(profit_pending: 0)
+      end
       render json: @payment, status: :created
     else
       render json: @payment.errors, status: :unprocessable_entity
@@ -46,6 +54,6 @@ class Api::V1::PaymentsController < ApplicationController
 
   # Only allow a trusted parameter "white list" through.
   def payment_params
-    params.require(:payment).permit(:date, :value, :receipt_number, :payment_type_id, :procedure_id)
+    params.require(:payment).permit(:value, :receipt_number, :payment_type_id, :procedure_id)
   end
 end

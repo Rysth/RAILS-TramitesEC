@@ -87,8 +87,8 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :procedure_sub_type_id, :processor_id, # rubocop:disable Layout/LineLength
-                                      :customer_id, :license_id, :status_id, payment_ids: [])
+    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
+                                      :customer_id, :license_id, :status_idrn)
   end
 
   def set_procedure

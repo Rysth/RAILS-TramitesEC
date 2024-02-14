@@ -2,7 +2,7 @@ class Api::V1::PaymentTypesController < ApplicationController
   before_action :authenticate_devise_api_token!
 
   def index
-    @payment_types = PaymentType.all
+    @payment_types = PaymentType.select(:id, :name).all
     render json: @payment_types
   end
 
