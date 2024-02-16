@@ -8,6 +8,7 @@ class Processor < ApplicationRecord
   validates :last_name, presence: true
   validates :phone, presence: true, numericality: { only_integer: true }
   validates :active, inclusion: { in: [true, false] }
+  validate :unique_name_combination
 
   before_validation :generate_code, on: :create
 
@@ -27,5 +28,10 @@ class Processor < ApplicationRecord
       new_code = "TR#{format('%07d', index + 1)}"
       processor.update(code: new_code)
     end
+  end
+
+  def unique_name_combination
+    existing_processor = Processor.find_by(first_name:, last_name:)
+    errors.add(:base, 'A Processor with the same first name and last name already exists.') if existing_processor && existing_processor != self
   end
 end
