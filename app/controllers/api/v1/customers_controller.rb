@@ -103,7 +103,7 @@ class Api::V1::CustomersController < ApplicationController
   private
 
   def calculate_total_values
-    completed_procedure_ids = @customer.procedures.where(status_id: [3, 4]).pluck(:id)
+    completed_procedure_ids = @customer.procedures.where(status_id: [3, 4], is_paid: true).pluck(:id)
     @total_valores = Procedure.where(id: completed_procedure_ids).sum(:cost)
     @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
     @total_tramites = @customer.procedures.count

@@ -88,7 +88,7 @@ class Api::V1::ProceduresController < ApplicationController
 
   def procedure_params
     params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :status_idrn)
+                                      :customer_id, :license_id, :status_id)
   end
 
   def set_procedure

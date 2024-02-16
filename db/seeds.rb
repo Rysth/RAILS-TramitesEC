@@ -82,24 +82,23 @@ PaymentType.create(name: "Efectivo")
 PaymentType.create(name: "Transferencia Bancaria")
 PaymentType.create(name: "Depósito")
 
-500.times do
+250.times do
   customer = Customer.find(Customer.ids.sample)
   processor_id = customer.is_direct? ? nil : Processor.ids.sample
 
   procedure_type_id = ProcedureType.ids.sample
   procedure_type = ProcedureType.find(procedure_type_id)
 
-  cost = Faker::Number.decimal(l_digits: 3, r_digits: 2)
-  profit = Faker::Number.decimal(l_digits: 2, r_digits: 2)
+  cost = Faker::Number.decimal(l_digits: 3)
+  profit = Faker::Number.decimal(l_digits: 2)
   cost_pending = cost
   profit_pending = profit
 
-  license_id = procedure_type.has_license? ? License.ids.sample : nil
+  license_id = procedure_type.has_licenses? ? License.ids.sample : nil
 
   plate = procedure_type.id == 2 ? Faker::Vehicle.license_plate : nil
-  customer_id = procedure_type.id == 2 ? customer.id : nil
 
-  procedure = Procedure.create(
+  procedure = Procedure.new(
     cost: cost,
     cost_pending: cost_pending,
     plate: plate,
@@ -109,29 +108,38 @@ PaymentType.create(name: "Depósito")
     active: Faker::Boolean.boolean(true_ratio: 0.8),
     user_id: User.ids.sample,
     processor_id: processor_id,
-    customer_id: customer_id,
+    customer_id: customer.id,
     procedure_type_id: procedure_type_id,
     status_id: Status.ids.sample,
     license_id: license_id
   )
-  
-  # Create payments and update cost_pending and profit_pending accordingly
-  payment_value = procedure.cost
-  while payment_value > 0
-    payment_value -= procedure.cost_pending
-    if payment_value >= 0
-      procedure.cost_pending = 0
-      procedure.profit_pending = 0
-    else
-      procedure.cost_pending -= payment_value.abs
-      procedure.profit_pending -= payment_value.abs * (profit / cost)
+
+  if procedure.valid?
+    procedure.save
+
+    # Create payments and update cost_pending and profit_pending accordingly
+    payment_value = procedure.cost
+    while payment_value > 0
+      payment_value -= procedure.cost_pending
+      if payment_value >= 0
+        procedure.cost_pending = 0
+        procedure.profit_pending = 0
+      else
+        procedure.cost_pending -= payment_value.abs
+        procedure.profit_pending -= payment_value.abs * (profit / cost)
+      end
+
+      payment_type_id = PaymentType.ids.sample
+      receipt_number = payment_type_id == 1 ? nil : Faker::Invoice.reference
+      
+      Payment.create(
+        value: payment_value > 0 ? procedure.cost_pending : payment_value.abs,
+        receipt_number: receipt_number,
+        payment_type_id: payment_type_id,
+        procedure_id: procedure.id
+      )
     end
-    Payment.create(
-      date: Faker::Date.between(from: 1.year.ago, to: Date.today),
-      value: payment_value > 0 ? procedure.cost_pending : payment_value.abs,
-      receipt_number: Faker::Invoice.reference,
-      payment_type_id: PaymentType.ids.sample,
-      procedure_id: procedure.id
-    )
+  else
+    puts "Procedure not valid: #{procedure.errors.full_messages}"
   end
-end  
+end

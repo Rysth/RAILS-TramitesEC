@@ -17,14 +17,21 @@ class Api::V1::PaymentsController < ApplicationController
   # POST /api/v1/payments
   def create
     @payment = Payment.new(payment_params)
+    procedure = Procedure.find(payment_params[:procedure_id])
+
+    # Check if both cost_pending and profit_pending are already zero
+    if procedure.cost_pending.zero? && procedure.profit_pending.zero?
+      render json: { error: 'Cannot create new payments when cost_pending and profit_pending are both zero' }, status: :unprocessable_entity
+      return
+    end
+
     if @payment.save
-      procedure = Procedure.find(payment_params[:procedure_id])
-      if procedure.cost_pending.positive?
-        new_cost_pending = [0, procedure.cost_pending - @payment.value].max
-        procedure.update(cost_pending: new_cost_pending)
-      else
-        procedure.update(profit_pending: 0)
-      end
+      new_cost_pending = [0, procedure.cost_pending - @payment.value].max
+      procedure.update(cost_pending: new_cost_pending)
+
+      # Check if the new cost_pending is zero and update profit_pending accordingly
+      procedure.update(profit_pending: 0, is_paid: true) if new_cost_pending.zero?
+
       render json: @payment, status: :created
     else
       render json: @payment.errors, status: :unprocessable_entity
@@ -40,9 +47,16 @@ class Api::V1::PaymentsController < ApplicationController
     end
   end
 
-  # DELETE /api/v1/payments/:id
   def destroy
-    @payment.destroy
+    procedure = @payment.procedure
+
+    if @payment.destroy
+      new_cost_pending = procedure.cost_pending + @payment.value
+      procedure.update(cost_pending: new_cost_pending, is_paid: false, profit_pending: procedure.profit)
+      head :no_content
+    else
+      render json: @payment.errors, status: :unprocessable_entity
+    end
   end
 
   private

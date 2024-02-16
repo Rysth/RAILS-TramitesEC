@@ -6,7 +6,7 @@ class Procedure < ApplicationRecord
   belongs_to :license, optional: true
   belongs_to :processor, optional: true
 
-  has_many :payments
+  has_many :payments, dependent: :destroy
 
   validates :code, presence: true, uniqueness: true
   validates :date, presence: true
