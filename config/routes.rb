@@ -6,7 +6,7 @@ Rails.application.routes.draw do
       get 'payment_types/show'
       resources :profiles, only: [:show]
       resources :users, only: [:index, :show]  
-      get 'processors/search_from_customers', to: 'processors#search_from_customers'
+      get 'processors/search_processors', to: 'processors#search_processors'
       resources :processors
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
       resources :customers

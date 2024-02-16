@@ -76,9 +76,13 @@ class Api::V1::ProcessorsController < ApplicationController
     end
   end
 
-  def search_from_customers
+  def search_processors
     query = params[:query]
-    processors = Processor.where('LOWER(code) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+    processors = if query.blank?
+                   Processor.order(created_at: :desc).page(1)
+                 else
+                   Processor.where('LOWER(code) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+                 end
     render json: processors.as_json(only: %i[id code first_name last_name])
   end
 

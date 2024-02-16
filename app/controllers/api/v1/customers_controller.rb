@@ -132,10 +132,13 @@ class Api::V1::CustomersController < ApplicationController
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      customers = customers.where('LOWER(identification) LIKE :search OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :search', search: search_term)
+      customers = customers.where('LOWER(identification) LIKE :search OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :search', 
+                                  search: search_term)
     end
 
-    customers = customers.where(user_id: params[:userId]) if params[:userId].present?
+    customers = customers.where(user_id: params[:userId]) if params[:userId].present? # Filter by User
+    customers = customers.where(processor_id: params[:processorId]) if params[:processorId].present? # Filter by Processor
+
     customers.page(params[:page]).per(20)
   end
 
