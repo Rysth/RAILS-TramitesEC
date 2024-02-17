@@ -77,11 +77,11 @@ class Api::V1::ProcessorsController < ApplicationController
   end
 
   def search_processors
-    query = params[:query]
+    query = "%#{params[:query].downcase}%"
     processors = if query.blank?
                    Processor.order(created_at: :desc).page(1)
                  else
-                   Processor.where('LOWER(code) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+                   Processor.where('LOWER(code) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
                  end
     render json: processors.as_json(only: %i[id code first_name last_name])
   end
@@ -136,7 +136,7 @@ class Api::V1::ProcessorsController < ApplicationController
     end
 
     processors = processors.where(user_id: params[:userId]) if params[:userId].present?
-    processors.page(params[:page]).per(20)
+    processors.page(params[:page]).per(15)
   end
 
   def set_processor

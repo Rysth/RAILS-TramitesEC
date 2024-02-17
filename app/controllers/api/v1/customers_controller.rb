@@ -94,8 +94,8 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def search_from_procedures
-    query = params[:query]
-    customers = Customer.where('LOWER(identification) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+    query = "%#{params[:query].downcase}%"
+    customers = Customer.where('LOWER(identification) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
     render json: customers.as_json(only: %i[id identification first_name last_name])
   end
 
@@ -137,7 +137,7 @@ class Api::V1::CustomersController < ApplicationController
     customers = customers.where(user_id: params[:userId]) if params[:userId].present? # Filter by User
     customers = customers.where(processor_id: params[:processorId]) if params[:processorId].present? # Filter by Processor
 
-    customers.page(params[:page]).per(20)
+    customers.page(params[:page]).per(15)
   end
 
   def set_customer

@@ -68,23 +68,21 @@ class Api::V1::ProceduresController < ApplicationController
 
   def all_procedures
     procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(created_at: :desc)
-  
+    
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:status, :customer)
-      procedures = procedures.left_outer_joins(:processor) # Include customers without processors
+      procedures = procedures.joins(:customer)
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
-        'LOWER(CONCAT(processors.first_name, \' \', processors.last_name)) LIKE :search OR ' \
-        'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search OR ' \
-        'LOWER(statuses.name) LIKE :search',
+        'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
         search: search_term
       )
     end
-
+  
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-    procedures = procedures.where(processor_id: params[:processorId]) if params[:processorId].present? # Filter by Processor
-    procedures.page(params[:page]).per(20)
+    procedures = procedures.where(processor_id: params[:processorId]) if params[:processorId].present?
+    procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
+    procedures.page(params[:page]).per(15)
   end
 
   def procedure_params
