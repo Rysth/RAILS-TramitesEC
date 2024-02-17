@@ -51,7 +51,6 @@ class Api::V1::CustomersController < ApplicationController
         tramites: @total_tramites,
         tramites_finalizados: @total_tramites_finalizados,
         tramites_proceso: @total_tramites_proceso,
-        tramites_proveedor: @total_tramites_proveedor,
         tramites_pendientes: @total_tramites_pendientes,
       },
       pagination: {
@@ -108,7 +107,6 @@ class Api::V1::CustomersController < ApplicationController
     @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
     @total_tramites = @customer.procedures.count
     @total_tramites_proceso = @customer.procedures.where(status_id: 1).count
-    @total_tramites_proveedor = @customer.procedures.where(status_id: 2).count
     @total_tramites_pendientes = @customer.procedures.where(is_paid: false).count
     @total_tramites_finalizados = completed_procedure_ids.count
   end

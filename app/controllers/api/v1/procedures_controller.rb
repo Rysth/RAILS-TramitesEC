@@ -81,8 +81,9 @@ class Api::V1::ProceduresController < ApplicationController
         search: search_term
       )
     end
-  
+
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
+    procedures = procedures.where(processor_id: params[:processorId]) if params[:processorId].present? # Filter by Processor
     procedures.page(params[:page]).per(20)
   end
 
