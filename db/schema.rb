@@ -86,7 +86,6 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
   create_table "procedure_types", force: :cascade do |t|
     t.string "name", null: false
     t.boolean "active", default: true
-    t.boolean "has_children", default: false
     t.boolean "has_licenses", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
