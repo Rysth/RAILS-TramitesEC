@@ -80,8 +80,17 @@ class Api::V1::ProceduresController < ApplicationController
     end
   
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-    procedures = procedures.where(processor_id: params[:processorId]) if params[:processorId].present?
+    
+    if params[:processorId].present?
+      if params[:processorId].to_i.zero?
+        procedures = procedures.joins(:customer).where(customers: { is_direct: true }) # Filter by Processor Id 0
+      else
+        procedures = procedures.where(processor_id: params[:processorId]) # Filter by Processor Id
+      end
+    end
+
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
+    
     procedures.page(params[:page]).per(15)
   end
 

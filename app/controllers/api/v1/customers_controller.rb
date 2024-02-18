@@ -96,17 +96,17 @@ class Api::V1::CustomersController < ApplicationController
   def search_from_procedures
     query = "%#{params[:query].downcase}%"
     customers = Customer.where('LOWER(identification) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
-    render json: customers.as_json(only: %i[id identification first_name last_name])
+    render json: customers.as_json(only: %i[id identification first_name last_name is_direct])
   end
 
   private
 
   def calculate_total_values
-    completed_procedure_ids = @customer.procedures.where(status_id: [3, 4], is_paid: true).pluck(:id)
+    completed_procedure_ids = @customer.procedures.where(status_id: 4, is_paid: true).pluck(:id)
     @total_valores = Procedure.where(id: completed_procedure_ids).sum(:cost)
     @total_ganancias = Procedure.where(id: completed_procedure_ids).sum(:profit)
     @total_tramites = @customer.procedures.count
-    @total_tramites_proceso = @customer.procedures.where(status_id: 1).count
+    @total_tramites_proceso = @customer.procedures.where(status_id: [1, 3]).count
     @total_tramites_pendientes = @customer.procedures.where(is_paid: false).count
     @total_tramites_finalizados = completed_procedure_ids.count
   end
@@ -135,7 +135,15 @@ class Api::V1::CustomersController < ApplicationController
     end
 
     customers = customers.where(user_id: params[:userId]) if params[:userId].present? # Filter by User
-    customers = customers.where(processor_id: params[:processorId]) if params[:processorId].present? # Filter by Processor
+
+    if params[:processorId].present?
+      if params[:processorId].to_i.zero?
+        customers = customers.where(is_direct: true) # Filter by Processor Id 0
+      else
+        customers = customers.where(processor_id: params[:processorId]) # Filter by Processor Id
+      end
+    end
+
 
     customers.page(params[:page]).per(15)
   end

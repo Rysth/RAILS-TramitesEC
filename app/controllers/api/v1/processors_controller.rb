@@ -12,7 +12,7 @@ class Api::V1::ProcessorsController < ApplicationController
 
     procedures = @processor.procedures.includes(:customer, :status, :procedure_type, :user)
       .order(created_at: :desc).page(page).per(per_page)
-    completed_procedures = @processor.procedures.where(status_id: [3, 4], is_paid: true)
+    completed_procedures = @processor.procedures.where(status_id: 4, is_paid: true)
 
     # Calculate total values only if they haven't been calculated before
     if @total_valores.nil? || @total_ganancias.nil? ||
@@ -93,9 +93,9 @@ class Api::V1::ProcessorsController < ApplicationController
     @total_ganancias = completed_procedures.sum(:profit)
     @total_clientes = @processor.customers.count
     @total_tramites = @processor.procedures.count
-    @total_tramites_proceso = @processor.procedures.where(status_id: 1).count
+    @total_tramites_proceso = @processor.procedures.where(status_id: [1, 3]).count
     @total_tramites_proveedor = @processor.procedures.where(status_id: 2).count
-    @total_tramites_finalizados = @processor.procedures.where(status_id: [3, 4]).count
+    @total_tramites_finalizados = @processor.procedures.where(status_id: 4).count
   end
 
   def customers?

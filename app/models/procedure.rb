@@ -1,6 +1,6 @@
 class Procedure < ApplicationRecord
   belongs_to :user
-  belongs_to :customer
+  belongs_to :customer, optional: true
   belongs_to :procedure_type, class_name: "ProcedureType"
   belongs_to :status
   belongs_to :license, optional: true
