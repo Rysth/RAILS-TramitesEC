@@ -16,7 +16,7 @@ class Procedure < ApplicationRecord
   validates :profit_pending, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :is_paid, inclusion: { in: [true, false] }
 
-  validates :user, :customer, :procedure_type, :status, presence: true
+  validates :user, :procedure_type, :status, presence: true
 
   before_validation :generate_code, on: :create
   before_validation :set_date, on: :create

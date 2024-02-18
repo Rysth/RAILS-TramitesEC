@@ -14,7 +14,7 @@ class Api::V1::ProceduresController < ApplicationController
     @procedure = Procedure.new(procedure_params)
     @procedure.user_id = current_devise_api_user.id
 
-    if @procedure.save
+    if @procedure.save!
       render json: procedure_data(@procedure), status: :created
     else
       render json: @procedure.errors, status: :unprocessable_entity

@@ -105,7 +105,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.boolean "active", default: true, null: false
     t.bigint "user_id", null: false
     t.bigint "processor_id"
-    t.bigint "customer_id", null: false
+    t.bigint "customer_id"
     t.bigint "procedure_type_id", null: false
     t.bigint "status_id", null: false
     t.bigint "license_id"

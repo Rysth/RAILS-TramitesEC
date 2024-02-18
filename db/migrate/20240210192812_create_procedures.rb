@@ -13,7 +13,7 @@ class CreateProcedures < ActiveRecord::Migration[7.1]
       t.boolean :active, default: true, null: false
       t.references :user, null: false, foreign_key: true
       t.references :processor, foreign_key: true
-      t.references :customer, null: false, foreign_key: true
+      t.references :customer,  foreign_key: true
       t.references :procedure_type, null: false, foreign_key: true
       t.references :status, null: false, foreign_key: true
       t.references :license, foreign_key: true
