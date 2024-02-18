@@ -86,6 +86,44 @@ class Api::V1::ProcessorsController < ApplicationController
     render json: processors.as_json(only: %i[id code first_name last_name])
   end
 
+  def generate_excel
+    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
+    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
+  
+    if start_date.nil? || end_date.nil?
+      render json: { error: 'Invalid date parameters' }, status: :unprocessable_entity
+      return
+    end
+  
+    # Query processors within the specified date range
+    processors = Processor.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+  
+    # Generate Excel file using axlsx_rails gem
+    package = Axlsx::Package.new
+    workbook = package.workbook
+    workbook.add_worksheet(name: 'Trámitadores') do |sheet| 
+      # Add headers
+      sheet.add_row ['ID', 'Código', 'Nombres', 'Apellidos', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites', 'Total de Valores' , 'Total de Ganancias', 'Usuario']
+  
+      # Add data for each processor
+    processors.each do |processor|
+        # Calculate total values for the current processor
+        total_clients = processor.customers.count
+        total_procedures = processor.procedures.count
+        total_cost = processor.procedures.sum(:cost)
+        total_profit = processor.procedures.sum(:profit)
+
+        sheet.add_row [
+          processor.id, processor.code, processor.first_name, processor.last_name, processor.created_at,
+          total_clients, total_procedures, total_cost, total_profit, processor.user.username
+        ]
+      end
+    end
+  
+    # Set the content type for the response and send the file
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "tramitadores#{start_date}_to_#{end_date}.xlsx"
+  end
+
   private
 
   def calculate_total_values(completed_procedures)

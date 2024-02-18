@@ -7,7 +7,9 @@ Rails.application.routes.draw do
       resources :profiles, only: [:show]
       resources :users, only: [:index, :show]  
       get 'processors/search_processors', to: 'processors#search_processors'
-      resources :processors
+      resources :processors  do
+        get 'generate_excel', on: :collection
+      end
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
       resources :customers
       resources :procedure_types, only: [:index]

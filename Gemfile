@@ -74,7 +74,8 @@ group :test do
   gem 'selenium-webdriver'
 end
 
-gem 'axlsx_rails'
+gem 'caxlsx'
+gem 'caxlsx_rails'
 gem 'devise', '~> 4.9'
 gem 'devise-api', github: 'nejdetkadir/devise-api', branch: 'main'
 
