@@ -59,7 +59,7 @@ class Api::V1::ProceduresController < ApplicationController
         user: { only: %i[id username] },
         customer: { only: %i[id identification first_name last_name is_direct] },
         processor: { only: %i[id code first_name last_name] },
-        procedure_type: { only: %i[id name] },
+        procedure_type: { only: %i[id name has_licenses] },
         license: { only: %i[id name] },
         status: { only: %i[id name] }
       }
