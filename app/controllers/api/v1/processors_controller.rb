@@ -103,7 +103,7 @@ class Api::V1::ProcessorsController < ApplicationController
     workbook = package.workbook
     workbook.add_worksheet(name: 'Trámitadores') do |sheet| 
       # Add headers
-      sheet.add_row ['ID', 'Código', 'Nombres', 'Apellidos', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites', 'Total de Valores' , 'Total de Ganancias', 'Usuario']
+      sheet.add_row ['ID', 'Código', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites', 'Total de Valores' , 'Total de Ganancias', 'Usuario']
   
       # Add data for each processor
     processors.each do |processor|
@@ -114,7 +114,7 @@ class Api::V1::ProcessorsController < ApplicationController
         total_profit = processor.procedures.sum(:profit)
 
         sheet.add_row [
-          processor.id, processor.code, processor.first_name, processor.last_name, processor.created_at,
+          processor.id, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at,
           total_clients, total_procedures, total_cost, total_profit, processor.user.username
         ]
       end

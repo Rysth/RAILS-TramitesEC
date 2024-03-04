@@ -62,6 +62,12 @@ class Api::V1::CustomersController < ApplicationController
 
   def create
     @customer = Customer.new(customer_params)
+
+    unless customer_params[:is_direct]  
+      @processor =  Processor.select(:phone).find(customer_params[:processor_id])
+      @customer.phone = @processor.phone
+    end
+
     @customer.user_id = current_devise_api_user.id
 
     if @customer.save!
