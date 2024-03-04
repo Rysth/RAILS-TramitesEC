@@ -97,13 +97,20 @@ class Api::V1::ProcessorsController < ApplicationController
   
     # Query processors within the specified date range
     processors = Processor.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+
+    is_admin = params[:is_admin] == 'true' if params[:is_admin].present?
   
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
     workbook.add_worksheet(name: 'Trámitadores') do |sheet| 
       # Add headers
-      sheet.add_row ['ID', 'Código', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites', 'Total de Valores' , 'Total de Ganancias', 'Usuario']
+      # Add headers
+    header_rows = ['ID', 'Usuario', 'Código', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites']
+    header_rows.concat(['Total de Valores', 'Total de Ganancias']) if is_admin 
+
+    sheet.add_row header_rows
+
   
       # Add data for each processor
     processors.each do |processor|
@@ -113,10 +120,12 @@ class Api::V1::ProcessorsController < ApplicationController
         total_cost = processor.procedures.sum(:cost)
         total_profit = processor.procedures.sum(:profit)
 
-        sheet.add_row [
-          processor.id, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at,
-          total_clients, total_procedures, total_cost, total_profit, processor.user.username
-        ]
+        body_rows = [ processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at,
+        total_clients, total_procedures]
+        body_rows.concat([total_cost, total_profit])  if is_admin
+
+        sheet.add_row body_rows
+
       end
     end
   
