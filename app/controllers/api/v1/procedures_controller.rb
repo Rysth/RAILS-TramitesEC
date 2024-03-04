@@ -90,6 +90,7 @@ class Api::V1::ProceduresController < ApplicationController
     end
 
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
+    procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
     
     procedures.page(params[:page]).per(15)
   end
