@@ -1,7 +1,7 @@
 # Seed Users
-User.create(username: "William Briones", email: "william.b@test.com", password: "123456", is_admin: true,  active: true)
-User.create(username: "Ericka Contreras", email: "ericka.c@test.com", password: "123456", is_admin: false,  active: true)
-User.create(username: "Gabriela Sanchéz", email: "gabriela.s@test.com", password: "123456", is_admin: false, active: true)
+User.create(username: "William Briones", email: "william.b@tramitesec.cloud", password: "TramitesEC@William", is_admin: true,  active: true)
+User.create(username: "Ericka Contreras", email: "ericka.c@tramitesec.cloud", password: "TramitesEC@Ericka", is_admin: false,  active: true)
+User.create(username: "Gabriela Sanchéz", email: "gabriela.s@tramitesec.cloud", password: "TramitesEC@Gabriela", is_admin: false, active: true)
 
 # Seed ProcedureTypes
 ProcedureType.create(name: "Revisión", active: true, has_licenses: false) # || Vehicular
