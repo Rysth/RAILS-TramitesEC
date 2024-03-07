@@ -1,2 +1,1 @@
-web: bundle exec puma -C config/puma.rb
-release: bundle exec rails db:migrate && bundle exec rails db:seed
+web: bin/rails server -p 3000
