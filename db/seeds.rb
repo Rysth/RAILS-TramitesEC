@@ -18,7 +18,7 @@ ProcedureType.create(name: "Observación Laminas Oscuras", active: true, has_lic
 ProcedureType.create(name: "Certificados sin Deuda", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Certificados con Deuda", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Revisión Transporte Público", active: true, has_licenses: false) # Vehicular
-ProcedureType.create(name: "Cambio de Propietario", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Cambio de Propietario", active: true, has_licenses: true) # Vehicular y Liceni
 ProcedureType.create(name: "Cambio de Color", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Gravamen", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Revisión ATM Particulares", active: true, has_licenses: false) # Vehicular
@@ -26,6 +26,7 @@ ProcedureType.create(name: "Cambio de Comercial/Particular", active: true, has_l
 ProcedureType.create(name: "Ingreso de Vehículo", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Tipo de Sangre", active: true, has_licenses: true) # Licencia
 ProcedureType.create(name: "CUV", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Revisión Técnica", active: true, has_licenses: false) # Vehicular
 
 # Seed LicenseTypes
 LicenseType.create(name: "No Profesionales", active: true)
