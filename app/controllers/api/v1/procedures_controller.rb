@@ -90,8 +90,8 @@ class Api::V1::ProceduresController < ApplicationController
     end
 
      # Filter procedures based on the presence of licenses
-    if params[:has_licenses].present?
-      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:has_licenses])
+    if params[:hasLicenses].present?
+      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
       procedures = has_licenses ? procedures.joins(:procedure_type).where(procedure_types: { has_licenses: true }) : procedures.joins(:procedure_type).where(procedure_types: { has_licenses: false })
     end
 
