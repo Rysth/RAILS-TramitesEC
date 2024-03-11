@@ -62,8 +62,7 @@ class Api::V1::ProceduresController < ApplicationController
         procedure_type: { only: %i[id name has_licenses] },
         license: { only: %i[id name] },
         status: { only: %i[id name] },
-      },
-      only: [:created_at]
+      }
     )
   end
 
