@@ -111,23 +111,34 @@ class Api::V1::ProcessorsController < ApplicationController
 
     sheet.add_row header_rows
 
+    # Add data for each processor
+    total_clients_all = 0
+    total_procedures_all = 0
+    total_cost_all = 0
+    total_profit_all = 0
   
-      # Add data for each processor
     processors.each do |processor|
-        # Calculate total values for the current processor
-        total_clients = processor.customers.count
-        total_procedures = processor.procedures.count
-        total_cost = processor.procedures.sum(:cost)
-        total_profit = processor.procedures.sum(:profit)
+      # Calculate total values for the current processor
+      total_clients = processor.customers.count
+      total_procedures = processor.procedures.count
+      total_cost = processor.procedures.sum(:cost)
+      total_profit = processor.procedures.sum(:profit)
 
-        body_rows = [ processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at,
-        total_clients, total_procedures]
-        body_rows.concat([total_cost, total_profit])  if is_admin
+      total_clients_all += total_clients
+      total_procedures_all += total_procedures
+      total_cost_all += total_cost
+      total_profit_all += total_profit
 
-        sheet.add_row body_rows
+      body_rows = [processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at, total_clients, total_procedures]
+      body_rows.concat([total_cost, total_profit])  if is_admin
 
-      end
+      sheet.add_row body_rows
     end
+
+    # Add totals row
+    totals_row = ['Totales', '', '', '', '', '', '', total_clients_all, total_procedures_all]
+    totals_row.concat([total_cost_all, total_profit_all]) if is_admin
+    sheet.add_row totals_row
   
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "tramitadores#{start_date}_to_#{end_date}.xlsx"

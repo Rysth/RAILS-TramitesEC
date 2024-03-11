@@ -106,6 +106,53 @@ class Api::V1::CustomersController < ApplicationController
     render json: customers.as_json(only: %i[id identification first_name last_name is_direct])
   end
 
+  def generate_excel
+    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
+    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
+  
+    if start_date.nil? || end_date.nil?
+      render json: { error: 'Invalid date parameters' }, status: :unprocessable_entity
+      return
+    end
+  
+    # Query customers within the specified date range
+    customers = Customer.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+  
+  # Generate Excel file using axlsx_rails gem
+  package = Axlsx::Package.new
+  workbook = package.workbook
+  workbook.add_worksheet(name: 'Clientes') do |sheet| 
+    # Add headers
+    header_rows = ['ID', 'Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Dirección', 'Correo Electrónico', 'Fecha de Creación', 'Trámitador', 'Total de Trámites', 'Total de Valores', 'Total de Ganancias']
+    sheet.add_row header_rows
+
+    # Add data for each customer
+    customers.each do |customer|
+      processor_info = customer.processor.present? ? "#{customer.processor.first_name} #{customer.processor.last_name}" : 'Cliente Directo'
+      total_tramites = customer.procedures_count # Assuming procedures_count is a method returning the count of associated procedures
+      total_values = customer.total_values # Assuming total_values is a method returning the sum of total values
+      total_ganancias = customer.total_ganancias # Assuming total_ganancias is a method returning the sum of total profits
+
+      body_rows = [customer.id, customer.identification, customer.first_name, customer.last_name, customer.phone, customer.address, customer.email, customer.created_at, processor_info, total_tramites, total_values, total_ganancias]
+      sheet.add_row body_rows
+    end
+
+    # Calculate totals
+    total_clients = customers.count
+    total_tramites = customers.sum(&:procedures_count) # Assuming procedures_count is a method returning the count of associated procedures
+    total_values = customers.sum(&:total_values) # Assuming total_values is a method returning the sum of total values
+    total_ganancias = customers.sum(&:total_ganancias) # Assuming total_ganancias is a method returning the sum of total profits
+
+    # Add totals row
+    totals_row = ['Totales', '', '', '', '', '', '', '', '', total_clients, total_tramites, total_values, total_ganancias]
+    sheet.add_row totals_row
+  end
+  
+    # Set the content type for the response and send the file
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "clientes_#{start_date}_to_#{end_date}.xlsx"
+  end
+  
+
   private
 
   def calculate_total_values

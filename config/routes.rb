@@ -11,7 +11,9 @@ Rails.application.routes.draw do
         get 'generate_excel', on: :collection
       end
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
-      resources :customers
+      resources :customers do
+        get 'generate_excel', on: :collection
+      end
       resources :procedure_types, only: [:index]
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
