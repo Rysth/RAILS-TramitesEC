@@ -97,7 +97,7 @@ class Api::V1::ProcessorsController < ApplicationController
   
     # Query processors within the specified date range
     processors = Processor.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-
+  
     is_admin = params[:is_admin] == 'true' if params[:is_admin].present?
   
     # Generate Excel file using axlsx_rails gem
@@ -105,40 +105,39 @@ class Api::V1::ProcessorsController < ApplicationController
     workbook = package.workbook
     workbook.add_worksheet(name: 'Trámitadores') do |sheet| 
       # Add headers
-      # Add headers
-    header_rows = ['ID', 'Usuario', 'Código', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites']
-    header_rows.concat(['Total de Valores', 'Total de Ganancias']) if is_admin 
-
-    sheet.add_row header_rows
-
-    # Add data for each processor
-    total_clients_all = 0
-    total_procedures_all = 0
-    total_cost_all = 0
-    total_profit_all = 0
+      header_rows = ['ID', 'Usuario', 'Código', 'Nombres', 'Apellidos', 'Teléfono', 'Fecha de Creación', 'Total de Clientes', 'Total de Trámites']
+      header_rows.concat(['Total de Valores', 'Total de Ganancias']) if is_admin
+      sheet.add_row header_rows
   
-    processors.each do |processor|
-      # Calculate total values for the current processor
-      total_clients = processor.customers.count
-      total_procedures = processor.procedures.count
-      total_cost = processor.procedures.sum(:cost)
-      total_profit = processor.procedures.sum(:profit)
-
-      total_clients_all += total_clients
-      total_procedures_all += total_procedures
-      total_cost_all += total_cost
-      total_profit_all += total_profit
-
-      body_rows = [processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at, total_clients, total_procedures]
-      body_rows.concat([total_cost, total_profit])  if is_admin
-
-      sheet.add_row body_rows
+      # Add data for each processor
+      total_clients_all = 0
+      total_procedures_all = 0
+      total_cost_all = 0
+      total_profit_all = 0
+  
+      processors.each do |processor|
+        # Calculate total values for the current processor
+        total_clients = processor.customers.count
+        total_procedures = processor.procedures.count
+        total_cost = processor.procedures.sum(:cost)
+        total_profit = processor.procedures.sum(:profit)
+  
+        total_clients_all += total_clients
+        total_procedures_all += total_procedures
+        total_cost_all += total_cost
+        total_profit_all += total_profit
+  
+        body_rows = [processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone, processor.created_at, total_clients, total_procedures]
+        body_rows.concat([total_cost, total_profit])  if is_admin
+  
+        sheet.add_row body_rows
+      end
+  
+      # Add totals row
+      totals_row = ['Totales', '', '', '', '', '', '', total_clients_all, total_procedures_all]
+      totals_row.concat([total_cost_all, total_profit_all]) if is_admin
+      sheet.add_row totals_row
     end
-
-    # Add totals row
-    totals_row = ['Totales', '', '', '', '', '', '', total_clients_all, total_procedures_all]
-    totals_row.concat([total_cost_all, total_profit_all]) if is_admin
-    sheet.add_row totals_row
   
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "tramitadores#{start_date}_to_#{end_date}.xlsx"
@@ -215,5 +214,4 @@ class Api::V1::ProcessorsController < ApplicationController
   def processor_params
     params.require(:processor).permit(:id, :code, :first_name, :last_name, :phone)
   end
-end
 end
