@@ -61,8 +61,9 @@ class Api::V1::ProceduresController < ApplicationController
         processor: { only: %i[id code first_name last_name] },
         procedure_type: { only: %i[id name has_licenses] },
         license: { only: %i[id name] },
-        status: { only: %i[id name] }
-      }
+        status: { only: %i[id name] },
+      },
+      only: [:created_at]
     )
   end
 
@@ -103,7 +104,7 @@ class Api::V1::ProceduresController < ApplicationController
 
   def procedure_params
     params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :status_id)
+                                      :customer_id, :license_id, :status_id, :created_at)
   end
 
   def set_procedure
