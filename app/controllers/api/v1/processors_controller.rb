@@ -216,3 +216,4 @@ class Api::V1::ProcessorsController < ApplicationController
     params.require(:processor).permit(:id, :code, :first_name, :last_name, :phone)
   end
 end
+end
