@@ -71,9 +71,10 @@ class Api::V1::ProceduresController < ApplicationController
     
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:customer)
+      procedures = procedures.includes(:customer)
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
+        'LOWER(procedures.plate) LIKE :search OR ' \
         'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
         search: search_term
       )
@@ -97,6 +98,8 @@ class Api::V1::ProceduresController < ApplicationController
 
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
     procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
+
+    puts procedures
     
     procedures.page(params[:page]).per(15)
   end
