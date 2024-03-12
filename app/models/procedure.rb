@@ -21,6 +21,8 @@ class Procedure < ApplicationRecord
   before_validation :generate_code, on: :create
   before_validation :set_date, on: :create
 
+  validate :plate_uniqueness_by_type, on: %i[create update]
+
   def generate_code
     last_procedure = Procedure.last
     last_number = last_procedure&.code&.match(/\d+/)&.[](0).to_i || 0
@@ -35,5 +37,14 @@ class Procedure < ApplicationRecord
 
   def update_is_paid_status
     self.is_paid = true if cost_pending.zero? && profit_pending.zero?
+  end
+
+  def plate_uniqueness_by_type
+    return unless plate_changed? || procedure_type_id_changed?
+    return if procedure_type&.has_licenses? # Skip validation if procedure type requires licenses
+  
+    if Procedure.where(plate: plate, procedure_type_id: procedure_type_id).where.not(id: id).exists?
+      errors.add(:plate, "must be unique per procedure type")
+    end
   end
 end
