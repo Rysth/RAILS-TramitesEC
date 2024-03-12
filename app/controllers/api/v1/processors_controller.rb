@@ -96,7 +96,7 @@ class Api::V1::ProcessorsController < ApplicationController
     end
   
     # Query processors within the specified date range
-    processors = Processor.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    processors = Processor.includes(%i[user]).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
   
     is_admin = params[:is_admin] == 'true' if params[:is_admin].present?
   
@@ -117,8 +117,8 @@ class Api::V1::ProcessorsController < ApplicationController
   
       processors.each do |processor|
         # Calculate total values for the current processor
-        total_clients = processor.customers.count
-        total_procedures = processor.procedures.count
+        total_clients = processor.customers_count
+        total_procedures = processor.procedures_count
         total_cost = processor.procedures.sum(:cost)
         total_profit = processor.procedures.sum(:profit)
   
