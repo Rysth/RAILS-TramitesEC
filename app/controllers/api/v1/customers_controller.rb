@@ -116,35 +116,34 @@ class Api::V1::CustomersController < ApplicationController
     end
   
     # Query customers within the specified date range
-    customers = Customer.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    customers = Customer.includes(%i[procedures processor]).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
   
-  # Generate Excel file using axlsx_rails gem
-  package = Axlsx::Package.new
-  workbook = package.workbook
-  workbook.add_worksheet(name: 'Clientes') do |sheet| 
+    # Generate Excel file using axlsx_rails gem
+    package = Axlsx::Package.new
+    workbook = package.workbook
+    workbook.add_worksheet(name: 'Clientes') do |sheet|
     # Add headers
-    header_rows = ['ID', 'Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Dirección', 'Correo Electrónico', 'Fecha de Creación', 'Trámitador', 'Total de Trámites', 'Total de Valores', 'Total de Ganancias']
+    header_rows = ['ID', 'Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Dirección', 'Correo Electrónico', 'Fecha de Creación', 'Trámitador',  'Total de Trámites', 'Total de Valores', 'Total de Ganancias']
     sheet.add_row header_rows
 
     # Add data for each customer
     customers.each do |customer|
       processor_info = customer.processor.present? ? "#{customer.processor.first_name} #{customer.processor.last_name}" : 'Cliente Directo'
       total_tramites = customer.procedures_count # Assuming procedures_count is a method returning the count of associated procedures
-      total_values = customer.total_values # Assuming total_values is a method returning the sum of total values
-      total_ganancias = customer.total_ganancias # Assuming total_ganancias is a method returning the sum of total profits
+      total_values = customer.procedures.sum(&:cost) # Assuming total_values is a method returning the sum of total values
+      total_ganancias = customer.procedures.sum(&:profit) # Assuming total_ganancias is a method returning the sum of total profits
 
       body_rows = [customer.id, customer.identification, customer.first_name, customer.last_name, customer.phone, customer.address, customer.email, customer.created_at, processor_info, total_tramites, total_values, total_ganancias]
       sheet.add_row body_rows
     end
 
     # Calculate totals
-    total_clients = customers.count
-    total_tramites = customers.sum(&:procedures_count) # Assuming procedures_count is a method returning the count of associated procedures
-    total_values = customers.sum(&:total_values) # Assuming total_values is a method returning the sum of total values
-    total_ganancias = customers.sum(&:total_ganancias) # Assuming total_ganancias is a method returning the sum of total profits
+    total_tramites = customers.map(&:procedures_count).sum
+    total_values = customers.map { |customer| customer.procedures.sum(&:cost) }.sum
+    total_ganancias = customers.map { |customer| customer.procedures.sum(&:profit) }.sum
 
     # Add totals row
-    totals_row = ['Totales', '', '', '', '', '', '', '', '', total_clients, total_tramites, total_values, total_ganancias]
+    totals_row = ['Totales', '', '', '', '', '', '', '', '', total_tramites, total_values, total_ganancias]
     sheet.add_row totals_row
   end
   
