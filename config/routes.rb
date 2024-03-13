@@ -18,7 +18,9 @@ Rails.application.routes.draw do
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]
-      resources :procedures
+      resources :procedures do
+        get 'generate_excel', on: :collection
+      end
       resources :payment_types, only: [:index, :show]
       resources :payments, only: [:index, :show, :create, :update, :destroy]
     end
