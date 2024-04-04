@@ -7,4 +7,5 @@ class User < ApplicationRecord
   has_many :processors, strict_loading: true
   has_many :procedures, strict_loading: true
   has_many :customers, strict_loading: true
+  has_many :suppliers, strict_loading: true
 end
