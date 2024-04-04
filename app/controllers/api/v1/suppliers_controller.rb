@@ -38,15 +38,78 @@ class Api::V1::SuppliersController < ApplicationController
     end
   end
 
+  def generate_excel
+    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
+    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
+
+    if start_date.nil? || end_date.nil?
+      render json: { error: 'Invalid date parameters' }, status: :unprocessable_entity
+      return
+    end
+
+    # Query suppliers within the specified date range
+    suppliers = Supplier.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+
+    # Generate Excel file using axlsx_rails gem
+    package = Axlsx::Package.new
+    workbook = package.workbook
+    workbook.add_worksheet(name: 'Proveedores') do |sheet|
+      # Add headers
+      header_rows = ['ID', 'Usuario', 'Identificación', 'Nombre', 'Teléfono', 'Fecha de Creación']
+      sheet.add_row header_rows
+
+      # Add data for each supplier
+      suppliers.each do |supplier|
+        body_rows = [
+          supplier.id,
+          supplier.user.username,
+          supplier.identification,
+          supplier.name,
+          supplier.phone,
+          supplier.created_at
+        ]
+        sheet.add_row body_rows
+      end
+    end
+  
+    # Set the content type for the response and send the file
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "proveedores_#{start_date}_to_#{end_date}.xlsx"
+  end
+
   private
 
   def render_suppliers_response
     suppliers = all_suppliers
-    render json: suppliers, status: :ok
+    render json: {
+      suppliers: suppliers.as_json(
+        only: %i[id identification name phone email active],
+        include: {
+          user: {
+            only: %i[id username]
+          }
+        }
+      ),
+      pagination: {
+        total_pages: suppliers.total_pages,
+        current_page: suppliers.current_page,
+        next_page: suppliers.next_page,
+        prev_page: suppliers.prev_page,
+        total_count: suppliers.total_count
+      }
+    }, status: :ok
   end
 
   def all_suppliers
     suppliers = Supplier.includes(:user).order(created_at: :desc)
+
+    if params[:search].present?
+      search_term = "%#{params[:search].downcase}%"
+      suppliers = suppliers.where('LOWER(identification) LIKE :search OR LOWER(name) LIKE :search', search: search_term)
+    end
+
+    suppliers = suppliers.where(user_id: params[:userId]) if params[:userId].present?
+    puts params
+
     suppliers.page(params[:page]).per(15)
   end
 
