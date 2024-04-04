@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_03_12_161532) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_04_011645) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -142,6 +142,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_12_161532) do
     t.index ["name"], name: "index_statuses_on_name", unique: true
   end
 
+  create_table "suppliers", force: :cascade do |t|
+    t.string "identification", null: false
+    t.string "name", null: false
+    t.string "phone", null: false
+    t.string "email"
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_suppliers_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "username", null: false
     t.string "email", default: "", null: false
@@ -169,4 +181,5 @@ ActiveRecord::Schema[7.1].define(version: 2024_03_12_161532) do
   add_foreign_key "procedures", "statuses"
   add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
+  add_foreign_key "suppliers", "users"
 end
