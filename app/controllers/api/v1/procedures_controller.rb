@@ -110,6 +110,7 @@ class Api::V1::ProceduresController < ApplicationController
         customer: { only: %i[id identification first_name last_name is_direct] },
         processor: { only: %i[id code first_name last_name] },
         procedure_type: { only: %i[id name has_licenses] },
+        supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
         status: { only: %i[id name] },
       }
@@ -149,14 +150,12 @@ class Api::V1::ProceduresController < ApplicationController
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
     procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
 
-    puts procedures
-    
     procedures.page(params[:page]).per(15)
   end
 
   def procedure_params
     params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :status_id, :created_at)
+                                      :customer_id, :license_id, :supplier_amount, :supplier_id, :status_id, :created_at)
   end
 
   def set_procedure

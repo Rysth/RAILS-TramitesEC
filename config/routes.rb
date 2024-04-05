@@ -10,6 +10,7 @@ Rails.application.routes.draw do
       resources :processors  do
         get 'generate_excel', on: :collection
       end
+      get 'suppliers/search_suppliers', to: 'suppliers#search_suppliers'
       resources :suppliers do
         get 'generate_excel', on: :collection
       end

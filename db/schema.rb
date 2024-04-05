@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_04_011645) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_05_015231) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -112,11 +112,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_04_011645) do
     t.bigint "license_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "supplier_amount", default: 0.0
+    t.bigint "supplier_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
     t.index ["license_id"], name: "index_procedures_on_license_id"
     t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["supplier_id"], name: "index_procedures_on_supplier_id"
     t.index ["user_id"], name: "index_procedures_on_user_id"
   end
 
@@ -179,6 +182,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_04_011645) do
   add_foreign_key "procedures", "procedure_types"
   add_foreign_key "procedures", "processors"
   add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "suppliers"
   add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
   add_foreign_key "suppliers", "users"

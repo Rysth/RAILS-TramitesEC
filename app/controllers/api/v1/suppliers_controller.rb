@@ -38,6 +38,16 @@ class Api::V1::SuppliersController < ApplicationController
     end
   end
 
+  def search_suppliers
+    query = "%#{params[:query].downcase}%"
+    suppliers = if query.blank?
+                  Supplier.order(created_at: :desc).page(1)
+                else
+                  Supplier.where('LOWER(identification) LIKE :query OR LOWER(name) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+                end
+    render json: suppliers.as_json(only: %i[id identification name])
+  end
+
   def generate_excel
     start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
