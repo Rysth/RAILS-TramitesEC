@@ -54,7 +54,7 @@ class Api::V1::ProceduresController < ApplicationController
     workbook = package.workbook
     workbook.add_worksheet(name: 'Procedures') do |sheet|
       # Add headers
-      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa', 'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Comentarios']
+      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa', 'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
   
       # Add data for each procedure
@@ -66,8 +66,9 @@ class Api::V1::ProceduresController < ApplicationController
         processor_info = procedure.processor.present? ? "#{procedure.processor.first_name} #{procedure.processor.last_name}" : "Cliente Directo"
         procedure_is_paid = procedure.is_paid ? "Pagado" : "Pendiente"
         status_info = procedure.status.present? ? "#{procedure.status.name}" : 'N/A'
+        supplier_info = procedure.supplier.present? ? "#{procedure.supplier.name}" : "N/A"
   
-        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info, customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, procedure.comments]
+        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info, customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
   
@@ -76,9 +77,10 @@ class Api::V1::ProceduresController < ApplicationController
       total_cost_pending = procedures.sum(:cost_pending)
       total_profit = procedures.sum(:profit)
       total_profit_pending = procedures.sum(:profit_pending)
+      total_supplier_amount = procedures.sum(:supplier_amount)
 
       # Add totals row
-      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '']
+      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '', total_supplier_amount, '']
       sheet.add_row totals_row
     end
   
