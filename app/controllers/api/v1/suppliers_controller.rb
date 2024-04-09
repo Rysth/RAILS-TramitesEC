@@ -49,23 +49,15 @@ class Api::V1::SuppliersController < ApplicationController
   end
 
   def generate_excel
-    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
-    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
-
-    if start_date.nil? || end_date.nil?
-      render json: { error: 'Invalid date parameters' }, status: :unprocessable_entity
-      return
-    end
-
     # Query suppliers within the specified date range
-    suppliers = Supplier.includes(:user).where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    suppliers = Supplier.includes(:user).all
 
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
     workbook.add_worksheet(name: 'Proveedores') do |sheet|
       # Add headers
-      header_rows = ['ID', 'Usuario', 'Identificación', 'Nombre', 'Teléfono', 'Fecha de Creación']
+      header_rows = ['ID', 'Usuario', 'Identificación', 'Nombre Completo', 'Teléfono', 'Fecha de Creación']
       sheet.add_row header_rows
 
       # Add data for each supplier
@@ -81,9 +73,9 @@ class Api::V1::SuppliersController < ApplicationController
         sheet.add_row body_rows
       end
     end
-  
+
     # Set the content type for the response and send the file
-    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "proveedores_#{start_date}_to_#{end_date}.xlsx"
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'proveedores.xlsx'
   end
 
   private
