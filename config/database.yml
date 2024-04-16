@@ -21,9 +21,8 @@ development:
   <<: *default
   database: rails_tramitesec_development
   host: localhost
-  username: john
-  password: 12345
-  port: 5433
+  username: rysthdesign
+  password: "@Anhn200709"
 
   # The specified database role being used to connect to PostgreSQL.
   # To create additional roles in PostgreSQL see `$ createuser --help`.
@@ -59,9 +58,8 @@ test:
   <<: *default
   database: rails_tramitesec_test
   host: localhost
-  username: john
-  password: 12345
-  port: 5433
+  username: rysthdesign
+  password: "@Anhn200709"
 
 # As with config/credentials.yml, you never want to store sensitive information,
 # like your database password, in your source code. If your source code is

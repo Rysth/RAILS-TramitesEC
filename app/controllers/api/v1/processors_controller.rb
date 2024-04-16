@@ -183,6 +183,9 @@ class Api::V1::ProcessorsController < ApplicationController
     end
 
     processors = processors.where(user_id: params[:userId]) if params[:userId].present?
+    processors = processors.where('created_at >= ?', params[:startDate]) if params[:startDate].present?
+    processors = processors.where('created_at <= ?', params[:endDate]) if params[:endDate].present?
+
     processors.page(params[:page]).per(15)
   end
 
