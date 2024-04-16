@@ -27,6 +27,10 @@ ProcedureType.create(name: "Ingreso de Vehículo", active: true, has_licenses: f
 ProcedureType.create(name: "Tipo de Sangre", active: true, has_licenses: true) # Licencia
 ProcedureType.create(name: "CUV", active: true, has_licenses: false) # Vehicular
 ProcedureType.create(name: "Revisión Técnica", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Duplicado de Placa", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Duplicado de Matrícula", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Especie de Matrícula", active: true, has_licenses: false) # Vehicular
+ProcedureType.create(name: "Cambio de Características", active: true, has_licenses: false) # Vehicular
 
 # Seed LicenseTypes
 LicenseType.create(name: "No Profesionales", active: true)

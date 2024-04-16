@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_09_004717) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -27,6 +27,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.bigint "processor_id"
+    t.integer "procedures_count", default: 0
     t.index ["processor_id"], name: "index_customers_on_processor_id"
     t.index ["user_id"], name: "index_customers_on_user_id"
   end
@@ -111,11 +112,14 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.bigint "license_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "supplier_amount", default: 0.0
+    t.bigint "supplier_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
     t.index ["license_id"], name: "index_procedures_on_license_id"
     t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
+    t.index ["supplier_id"], name: "index_procedures_on_supplier_id"
     t.index ["user_id"], name: "index_procedures_on_user_id"
   end
 
@@ -129,6 +133,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.integer "customers_count", default: 0, null: false
+    t.integer "procedures_count", default: 0
     t.index ["user_id"], name: "index_processors_on_user_id"
   end
 
@@ -138,6 +143,18 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_statuses_on_name", unique: true
+  end
+
+  create_table "suppliers", force: :cascade do |t|
+    t.string "identification", null: false
+    t.string "name", null: false
+    t.string "phone", null: false
+    t.string "email"
+    t.boolean "active", default: true
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_suppliers_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -165,6 +182,8 @@ ActiveRecord::Schema[7.1].define(version: 2024_02_10_195759) do
   add_foreign_key "procedures", "procedure_types"
   add_foreign_key "procedures", "processors"
   add_foreign_key "procedures", "statuses"
+  add_foreign_key "procedures", "suppliers"
   add_foreign_key "procedures", "users"
   add_foreign_key "processors", "users"
+  add_foreign_key "suppliers", "users"
 end

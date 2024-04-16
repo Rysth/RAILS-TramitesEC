@@ -10,13 +10,21 @@ Rails.application.routes.draw do
       resources :processors  do
         get 'generate_excel', on: :collection
       end
+      get 'suppliers/search_suppliers', to: 'suppliers#search_suppliers'
+      resources :suppliers do
+        get 'generate_excel', on: :collection
+      end
       get 'customers/search_from_procedures', to: 'customers#search_from_procedures'
-      resources :customers
+      resources :customers do
+        get 'generate_excel', on: :collection
+      end
       resources :procedure_types, only: [:index]
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]
-      resources :procedures
+      resources :procedures do
+        get 'generate_excel', on: :collection
+      end
       resources :payment_types, only: [:index, :show]
       resources :payments, only: [:index, :show, :create, :update, :destroy]
     end

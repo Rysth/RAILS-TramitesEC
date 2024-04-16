@@ -101,10 +101,51 @@ class Api::V1::CustomersController < ApplicationController
 
   def search_from_procedures
     query = "%#{params[:query].downcase}%"
-    customers = Customer.where('LOWER(identification) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query', query: "%#{query}%").order(created_at: :desc).page(1)
+    customers = Customer.where('LOWER(identification) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query', 
+                               query: "%#{query}%").order(created_at: :desc).page(1)
     customers = customers.where(processor_id: params[:processorId]) if params.key?(:processorId) && params[:processorId].present?
     render json: customers.as_json(only: %i[id identification first_name last_name is_direct])
   end
+
+  def generate_excel
+    # Query customers within the specified date range
+    customers = Customer.includes(%i[procedures processor]).all
+
+    # Generate Excel file using axlsx_rails gem
+    package = Axlsx::Package.new
+    workbook = package.workbook
+    workbook.add_worksheet(name: 'Clientes') do |sheet|
+      # Add headers
+      header_rows = ['ID', 'Trámitador', 'Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Dirección', 'Correo Electrónico',
+                     'Fecha de Creación', 'Total de Trámites', 'Total de Valores', 'Total de Ganancias']
+      sheet.add_row header_rows
+
+      # Add data for each customer
+      customers.each do |customer|
+        processor_info = customer.processor.present? ? "#{customer.processor.first_name} #{customer.processor.last_name}" : 'Cliente Directo'
+        total_tramites = customer.procedures_count # Assuming procedures_count is a method returning the count of associated procedures
+        total_values = customer.procedures.sum(&:cost) # Assuming total_values is a method returning the sum of total values
+        total_ganancias = customer.procedures.sum(&:profit) # Assuming total_ganancias is a method returning the sum of total profits
+
+        body_rows = [customer.id, processor_info, customer.identification, customer.first_name, customer.last_name, customer.phone, customer.address,
+                     customer.email, customer.created_at, total_tramites, total_values, total_ganancias]
+        sheet.add_row body_rows
+      end
+
+      # Calculate totals
+      total_tramites = customers.map(&:procedures_count).sum
+      total_values = customers.map { |customer| customer.procedures.sum(&:cost) }.sum
+      total_ganancias = customers.map { |customer| customer.procedures.sum(&:profit) }.sum
+
+      # Add totals row
+      totals_row = ['Totales', '', '', '', '', '', '', '', '', total_tramites, total_values, total_ganancias]
+      sheet.add_row totals_row
+    end
+
+    # Set the content type for the response and send the file
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'clientes.xlsx'
+  end
+
 
   private
 

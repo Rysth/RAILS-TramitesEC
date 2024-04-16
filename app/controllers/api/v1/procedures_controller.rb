@@ -37,6 +37,52 @@ class Api::V1::ProceduresController < ApplicationController
     end
   end
 
+  def generate_excel
+    # Query procedures within the specified date range
+    procedures = Procedure.includes(%i[user customer processor procedure_type status]).all
+    # Generate Excel file using axlsx_rails gem
+    package = Axlsx::Package.new
+    workbook = package.workbook
+    workbook.add_worksheet(name: 'Procedures') do |sheet|
+      # Add headers
+      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa', 
+                     'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
+      sheet.add_row header_rows
+
+      # Add data for each procedure
+      procedures.each do |procedure|
+        user_info = procedure.user.present? ? procedure.user.username.to_s : 'N/A'
+        customer_info = procedure.customer.present? ? "#{procedure.customer.first_name} #{procedure.customer.last_name}" : 'N/A'
+        procedure_type_info = procedure.procedure_type.present? ? procedure.procedure_type.name.to_s : 'N/A'
+        procedure_has_licenses = procedure.procedure_type.present? && procedure.procedure_type.has_licenses ? 'Licencias' : 'Vehícular'
+        processor_info = procedure.processor.present? ? "#{procedure.processor.first_name} #{procedure.processor.last_name}" : 'Cliente Directo'
+        procedure_is_paid = procedure.is_paid ? 'Pagado' : 'Pendiente'
+        status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
+        supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : "N/A"
+
+        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info, 
+                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
+        sheet.add_row body_rows
+      end
+
+      # Calculate totals
+      total_cost = procedures.sum(:cost)
+      total_cost_pending = procedures.sum(:cost_pending)
+      total_profit = procedures.sum(:profit)
+      total_profit_pending = procedures.sum(:profit_pending)
+      total_supplier_amount = procedures.sum(:supplier_amount)
+
+      # Add totals row
+      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '', 
+                    total_supplier_amount, '']
+      sheet.add_row totals_row
+    end
+
+    # Set the content type for the response and send the file
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "procedures.xlsx"
+  end
+  
+
   private
 
   def render_procedures_response
@@ -60,20 +106,22 @@ class Api::V1::ProceduresController < ApplicationController
         customer: { only: %i[id identification first_name last_name is_direct] },
         processor: { only: %i[id code first_name last_name] },
         procedure_type: { only: %i[id name has_licenses] },
+        supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
-        status: { only: %i[id name] }
+        status: { only: %i[id name] },
       }
     )
   end
 
   def all_procedures
-    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(created_at: :desc)
+    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(id: :desc)
     
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.joins(:customer)
+      procedures = procedures.includes(:customer)
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
+        'LOWER(procedures.plate) LIKE :search OR ' \
         'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
         search: search_term
       )
@@ -90,20 +138,20 @@ class Api::V1::ProceduresController < ApplicationController
     end
 
      # Filter procedures based on the presence of licenses
-    if params[:has_licenses].present?
-      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:has_licenses])
+    if params[:hasLicenses].present?
+      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
       procedures = has_licenses ? procedures.joins(:procedure_type).where(procedure_types: { has_licenses: true }) : procedures.joins(:procedure_type).where(procedure_types: { has_licenses: false })
     end
 
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
     procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
-    
+
     procedures.page(params[:page]).per(15)
   end
 
   def procedure_params
     params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :status_id)
+                                      :customer_id, :license_id, :supplier_amount, :supplier_id, :status_id, :created_at)
   end
 
   def set_procedure
