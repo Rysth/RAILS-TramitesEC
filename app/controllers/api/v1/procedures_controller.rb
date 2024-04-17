@@ -146,6 +146,17 @@ class Api::V1::ProceduresController < ApplicationController
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
     procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
 
+    if params[:startDate].present? && params[:endDate].present?
+      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
+      end_date = (params[:endDate].to_date + 1.day).end_of_day
+      procedures = procedures.where(created_at: start_date..end_date)
+    elsif params[:startDate].present?
+      procedures = procedures.where('created_at >= ?', params[:startDate])
+    elsif params[:endDate].present?
+      procedures = procedures.where('created_at <= ?', params[:endDate])
+    end
+  
+
     procedures.page(params[:page]).per(15)
   end
 

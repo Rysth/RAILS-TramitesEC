@@ -192,6 +192,15 @@ class Api::V1::CustomersController < ApplicationController
       end
     end
 
+    if params[:startDate].present? && params[:endDate].present?
+      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
+      end_date = (params[:endDate].to_date + 1.day).end_of_day
+      customers = customers.where(created_at: start_date..end_date)
+    elsif params[:startDate].present?
+      customers = customers.where('created_at >= ?', params[:startDate])
+    elsif params[:endDate].present?
+      customers = customers.where('created_at <= ?', params[:endDate])
+    end
 
     customers.page(params[:page]).per(15)
   end

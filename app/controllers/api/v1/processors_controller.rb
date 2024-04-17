@@ -190,8 +190,21 @@ class Api::V1::ProcessorsController < ApplicationController
     end
 
     processors = processors.where(user_id: params[:userId]) if params[:userId].present?
-    processors = processors.where('created_at >= ?', params[:startDate]) if params[:startDate].present?
-    processors = processors.where('created_at <= ?', params[:endDate]) if params[:endDate].present?
+    if params[:startDate].present? && params[:endDate].present?
+      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
+      end_date = (params[:endDate].to_date + 1.day).end_of_day
+      processors = processors.where(created_at: start_date..end_date)
+    elsif params[:startDate].present?
+      processors = processors.where('created_at >= ?', params[:startDate])
+    elsif params[:endDate].present?
+      processors = processors.where('created_at <= ?', params[:endDate])
+    end
+
+    processors.each do |supplier|
+      puts supplier.inspect
+    end
+  
+  
 
     processors.page(params[:page]).per(15)
   end

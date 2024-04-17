@@ -110,7 +110,16 @@ class Api::V1::SuppliersController < ApplicationController
     end
 
     suppliers = suppliers.where(user_id: params[:userId]) if params[:userId].present?
-    puts params
+
+    if params[:startDate].present? && params[:endDate].present?
+      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
+      end_date = (params[:endDate].to_date + 1.day).end_of_day
+      suppliers = suppliers.where(created_at: start_date..end_date)
+    elsif params[:startDate].present?
+      suppliers = suppliers.where('created_at >= ?', params[:startDate])
+    elsif params[:endDate].present?
+      suppliers = suppliers.where('created_at <= ?', params[:endDate])
+    end
 
     suppliers.page(params[:page]).per(15)
   end
