@@ -151,9 +151,9 @@ class Api::V1::ProceduresController < ApplicationController
       end_date = (params[:endDate].to_date + 1.day).end_of_day
       procedures = procedures.where(created_at: start_date..end_date)
     elsif params[:startDate].present?
-      procedures = procedures.where('created_at >= ?', params[:startDate])
+      procedures = procedures.where('procedures.updated_at >= ?', params[:startDate])
     elsif params[:endDate].present?
-      procedures = procedures.where('created_at <= ?', params[:endDate])
+      procedures = procedures.where('procedures.updated_at <= ?', params[:endDate])
     end
   
 
