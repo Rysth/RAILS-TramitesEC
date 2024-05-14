@@ -58,15 +58,25 @@ class Api::V1::PaymentsController < ApplicationController
 
   def destroy
     procedure = @payment.procedure
-
-    if @payment.destroy
-      new_cost_pending = procedure.cost_pending + @payment.value
-      procedure.update(cost_pending: new_cost_pending, is_paid: false, profit_pending: procedure.profit)
-      head :no_content
-    else
-      render json: @payment.errors, status: :unprocessable_entity
+  
+    # Use a transaction to ensure atomicity
+    ActiveRecord::Base.transaction do
+      if @payment.destroy
+        new_cost_pending = procedure.cost_pending + @payment.value
+  
+        if new_cost_pending > procedure.cost
+          procedure.update(cost_pending: procedure.cost, is_paid: false, profit_pending: procedure.profit)
+        else
+          procedure.update(cost_pending: new_cost_pending, is_paid: false, profit_pending: procedure.profit)
+        end
+  
+        head :no_content
+      else
+        render json: @payment.errors, status: :unprocessable_entity
+      end
     end
   end
+  
 
   private
 
