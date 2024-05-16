@@ -103,8 +103,8 @@ class Api::V1::ProceduresController < ApplicationController
     procedure.as_json(
       include: {
         user: { only: %i[id username] },
-        customer: { only: %i[id identification first_name last_name is_direct] },
-        processor: { only: %i[id code first_name last_name] },
+        customer: { only: %i[id identification first_name last_name is_direct phone] },
+        processor: { only: %i[id code first_name last_name phone] },
         procedure_type: { only: %i[id name has_licenses] },
         supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
@@ -122,6 +122,7 @@ class Api::V1::ProceduresController < ApplicationController
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
         'LOWER(procedures.plate) LIKE :search OR ' \
+        'LOWER(customers.identification) LIKE :search OR ' \
         'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
         search: search_term
       )
