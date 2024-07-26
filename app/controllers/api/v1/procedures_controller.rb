@@ -38,17 +38,30 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def generate_excel
-    # Query procedures within the specified date range
-    procedures = Procedure.includes(%i[user customer processor procedure_type status]).all
+    # Extract start_date and end_date from params
+    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
+    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
+  
+    # Query procedures within the specified date range and order by created_at in ascending order
+    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier])
+  
+    # Apply date range filtering if dates are provided
+    if start_date && end_date
+      procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    end
+  
+    # Order procedures by created_at in ascending order
+    procedures = procedures.order(created_at: :asc)
+  
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
     workbook.add_worksheet(name: 'Procedures') do |sheet|
       # Add headers
-      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa', 
+      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
                      'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
-
+  
       # Add data for each procedure
       procedures.each do |procedure|
         user_info = procedure.user.present? ? procedure.user.username.to_s : 'N/A'
@@ -59,28 +72,29 @@ class Api::V1::ProceduresController < ApplicationController
         procedure_is_paid = procedure.is_paid ? 'Pagado' : 'Pendiente'
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
         supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : "N/A"
-
-        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info, 
+  
+        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info,
                      customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
-
+  
       # Calculate totals
       total_cost = procedures.sum(:cost)
       total_cost_pending = procedures.sum(:cost_pending)
       total_profit = procedures.sum(:profit)
       total_profit_pending = procedures.sum(:profit_pending)
       total_supplier_amount = procedures.sum(:supplier_amount)
-
+  
       # Add totals row
-      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '', 
+      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '',
                     total_supplier_amount, '']
       sheet.add_row totals_row
     end
-
+  
     # Set the content type for the response and send the file
-    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: "procedures.xlsx"
+    send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'procedures.xlsx'
   end
+  
   
 
   private
