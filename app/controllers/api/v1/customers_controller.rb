@@ -108,9 +108,21 @@ class Api::V1::CustomersController < ApplicationController
   end
 
   def generate_excel
-    # Query customers within the specified date range
-    customers = Customer.includes(%i[procedures processor]).all
-
+    # Extract start_date and end_date from params
+    start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
+    end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
+  
+    # Query customers within the specified date range and order by created_at in ascending order
+    customers = Customer.includes(:procedures, :processor)
+  
+    # Apply date range filtering if dates are provided
+    if start_date && end_date
+      customers = customers.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    end
+  
+    # Order customers by created_at in ascending order
+    customers = customers.order(created_at: :asc)
+  
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
@@ -119,32 +131,36 @@ class Api::V1::CustomersController < ApplicationController
       header_rows = ['ID', 'Trámitador', 'Identificación', 'Nombres', 'Apellidos', 'Teléfono', 'Dirección', 'Correo Electrónico',
                      'Fecha de Creación', 'Total de Trámites', 'Total de Valores', 'Total de Ganancias']
       sheet.add_row header_rows
-
+  
       # Add data for each customer
+      total_tramites_all = 0
+      total_values_all = 0
+      total_ganancias_all = 0
+  
       customers.each do |customer|
         processor_info = customer.processor.present? ? "#{customer.processor.first_name} #{customer.processor.last_name}" : 'Cliente Directo'
         total_tramites = customer.procedures_count # Assuming procedures_count is a method returning the count of associated procedures
         total_values = customer.procedures.sum(&:cost) # Assuming total_values is a method returning the sum of total values
         total_ganancias = customer.procedures.sum(&:profit) # Assuming total_ganancias is a method returning the sum of total profits
-
+  
+        total_tramites_all += total_tramites
+        total_values_all += total_values
+        total_ganancias_all += total_ganancias
+  
         body_rows = [customer.id, processor_info, customer.identification, customer.first_name, customer.last_name, customer.phone, customer.address,
                      customer.email, customer.created_at, total_tramites, total_values, total_ganancias]
         sheet.add_row body_rows
       end
-
-      # Calculate totals
-      total_tramites = customers.map(&:procedures_count).sum
-      total_values = customers.map { |customer| customer.procedures.sum(&:cost) }.sum
-      total_ganancias = customers.map { |customer| customer.procedures.sum(&:profit) }.sum
-
+  
       # Add totals row
-      totals_row = ['Totales', '', '', '', '', '', '', '', '', total_tramites, total_values, total_ganancias]
+      totals_row = ['Totales', '', '', '', '', '', '', '', '', total_tramites_all, total_values_all, total_ganancias_all]
       sheet.add_row totals_row
     end
-
+  
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'clientes.xlsx'
   end
+  
 
 
   private
