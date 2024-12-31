@@ -52,18 +52,16 @@ class Api::V1::SuppliersController < ApplicationController
     # Extract start_date and end_date from params
     start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
-  
+
     # Query suppliers within the specified date range and order by created_at in ascending order
     suppliers = Supplier.includes(:user)
-  
+
     # Apply date range filtering if dates are provided
-    if start_date && end_date
-      suppliers = suppliers.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-    end
-  
+    suppliers = suppliers.where(created_at: start_date.beginning_of_day..end_date.end_of_day) if start_date && end_date
+
     # Order suppliers by created_at in ascending order
     suppliers = suppliers.order(created_at: :asc)
-  
+
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
@@ -71,7 +69,7 @@ class Api::V1::SuppliersController < ApplicationController
       # Add headers
       header_rows = ['ID', 'Usuario', 'Identificación', 'Nombre Completo', 'Teléfono', 'Fecha de Creación']
       sheet.add_row header_rows
-  
+
       # Add data for each supplier
       suppliers.each do |supplier|
         body_rows = [
@@ -85,7 +83,7 @@ class Api::V1::SuppliersController < ApplicationController
         sheet.add_row body_rows
       end
     end
-  
+
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'proveedores.xlsx'
   end
@@ -141,6 +139,8 @@ class Api::V1::SuppliersController < ApplicationController
   end
 
   def supplier_params
-    params.require(:supplier).permit(:identification, :name, :phone, :email)
+    params.require(:supplier).permit(:identification, :name, :phone, :email).tap do |supplier_params|
+      supplier_params[:name] = supplier_params[:name].strip.upcase if supplier_params[:name].present?
+    end
   end
 end
