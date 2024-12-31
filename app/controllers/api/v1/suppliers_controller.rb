@@ -94,7 +94,7 @@ class Api::V1::SuppliersController < ApplicationController
     suppliers = all_suppliers
     render json: {
       suppliers: suppliers.as_json(
-        only: %i[id identification name phone email active],
+        only: %i[id identification name phone active],
         include: {
           user: {
             only: %i[id username]
