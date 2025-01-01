@@ -62,6 +62,16 @@ class Api::V1::ProcedureTypesController < ApplicationController
       procedure_types = procedure_types.where('LOWER(name) LIKE :search', search: search_term)
     end
 
+    if params[:startDate].present? && params[:endDate].present?
+      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
+      end_date = (params[:endDate].to_date + 1.day).end_of_day
+      procedure_types = procedure_types.where(created_at: start_date..end_date)
+    elsif params[:startDate].present?
+      procedure_types = procedure_types.where('created_at >= ?', params[:startDate])
+    elsif params[:endDate].present?
+      procedure_types = procedure_types.where('created_at <= ?', params[:endDate])
+    end
+
     procedure_types.page(params[:page]).per(15)
   end
 
