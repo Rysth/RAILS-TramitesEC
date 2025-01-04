@@ -41,18 +41,16 @@ class Api::V1::ProceduresController < ApplicationController
     # Extract start_date and end_date from params
     start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
-  
+
     # Query procedures within the specified date range and order by created_at in ascending order
     procedures = Procedure.includes(%i[user customer processor procedure_type status supplier])
-  
+
     # Apply date range filtering if dates are provided
-    if start_date && end_date
-      procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-    end
-  
+    procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day) if start_date && end_date
+
     # Order procedures by created_at in ascending order
     procedures = procedures.order(created_at: :asc)
-  
+
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
@@ -61,7 +59,7 @@ class Api::V1::ProceduresController < ApplicationController
       header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
                      'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
-  
+
       # Add data for each procedure
       procedures.each do |procedure|
         user_info = procedure.user.present? ? procedure.user.username.to_s : 'N/A'
@@ -71,31 +69,29 @@ class Api::V1::ProceduresController < ApplicationController
         processor_info = procedure.processor.present? ? "#{procedure.processor.first_name} #{procedure.processor.last_name}" : 'Cliente Directo'
         procedure_is_paid = procedure.is_paid ? 'Pagado' : 'Pendiente'
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
-        supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : "N/A"
-  
+        supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
+
         body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info,
                      customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
-  
+
       # Calculate totals
       total_cost = procedures.sum(:cost)
       total_cost_pending = procedures.sum(:cost_pending)
       total_profit = procedures.sum(:profit)
       total_profit_pending = procedures.sum(:profit_pending)
       total_supplier_amount = procedures.sum(:supplier_amount)
-  
+
       # Add totals row
       totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '',
                     total_supplier_amount, '']
       sheet.add_row totals_row
     end
-  
+
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'procedures.xlsx'
   end
-  
-  
 
   private
 
@@ -122,14 +118,14 @@ class Api::V1::ProceduresController < ApplicationController
         procedure_type: { only: %i[id name has_licenses] },
         supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
-        status: { only: %i[id name] },
+        status: { only: %i[id name] }
       }
     )
   end
 
   def all_procedures
     procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(id: :desc)
-    
+
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
       procedures = procedures.includes(:customer)
@@ -143,16 +139,16 @@ class Api::V1::ProceduresController < ApplicationController
     end
 
     procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-    
+
     if params[:processorId].present?
-      if params[:processorId].to_i.zero?
-        procedures = procedures.joins(:customer).where(customers: { is_direct: true }) # Filter by Processor Id 0
-      else
-        procedures = procedures.where(processor_id: params[:processorId]) # Filter by Processor Id
-      end
+      procedures = if params[:processorId].to_i.zero?
+                     procedures.joins(:customer).where(customers: { is_direct: true }) # Filter by Processor Id 0
+                   else
+                     procedures.where(processor_id: params[:processorId]) # Filter by Processor Id
+                   end
     end
 
-     # Filter procedures based on the presence of licenses
+    # Filter procedures based on the presence of licenses
     if params[:hasLicenses].present?
       has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
       procedures = has_licenses ? procedures.joins(:procedure_type).where(procedure_types: { has_licenses: true }) : procedures.joins(:procedure_type).where(procedure_types: { has_licenses: false })
@@ -162,15 +158,20 @@ class Api::V1::ProceduresController < ApplicationController
     procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
 
     if params[:startDate].present? && params[:endDate].present?
-      start_date = (params[:startDate].to_date).beginning_of_day
-      end_date = (params[:endDate].to_date).end_of_day
+      start_date = params[:startDate].to_date.beginning_of_day
+      end_date = params[:endDate].to_date.end_of_day
       procedures = procedures.where(created_at: start_date..end_date)
     elsif params[:startDate].present?
-      procedures = procedures.where('procedures.created_at >= ?',(params[:startDate].to_date).beginning_of_day)
+      procedures = procedures.where('procedures.created_at >= ?', params[:startDate].to_date.beginning_of_day)
     elsif params[:endDate].present?
-      procedures = procedures.where('procedures.created_at <= ?', (params[:endDate].to_date).beginning_of_day)
+      procedures = procedures.where('procedures.created_at <= ?', params[:endDate].to_date.beginning_of_day)
     end
-  
+
+    if params[:selectedYear].present?
+      start_date = Date.new(params[:selectedYear].to_i, 1, 1)
+      end_date = Date.new(params[:selectedYear].to_i, 12, 31)
+      procedures = procedures.where(created_at: start_date..end_date)
+    end
 
     procedures.page(params[:page]).per(15)
   end
