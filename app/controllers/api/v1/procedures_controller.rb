@@ -132,8 +132,7 @@ class Api::V1::ProceduresController < ApplicationController
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
         'LOWER(procedures.plate) LIKE :search OR ' \
-        'LOWER(customers.identification) LIKE :search OR ' \
-        'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
+        'LOWER(customers.identification) LIKE :search ',
         search: search_term
       )
     end
