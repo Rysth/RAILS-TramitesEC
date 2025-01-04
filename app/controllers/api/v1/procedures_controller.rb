@@ -124,7 +124,7 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
-    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier).order(id: :desc)
+    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier).order(created_at: :desc)
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
