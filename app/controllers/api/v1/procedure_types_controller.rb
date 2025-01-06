@@ -43,15 +43,11 @@ class Api::V1::ProcedureTypesController < ApplicationController
 
     if params[:full] == 'true'
       render json: {
-        procedure_types: procedure_types.as_json(
-          only: %i[id name active has_licenses]
-        )
+        procedure_types:
       }, status: :ok
     else
       render json: {
-        procedure_types: procedure_types.as_json(
-          only: %i[id name active has_licenses]
-        ),
+        procedure_types:,
         pagination: {
           total_pages: procedure_types.total_pages,
           current_page: procedure_types.current_page,
@@ -81,7 +77,11 @@ class Api::V1::ProcedureTypesController < ApplicationController
       procedure_types = procedure_types.where('created_at <= ?', params[:endDate])
     end
 
-    procedure_types.page(params[:page]).per(15)
+    if params[:full] == 'true'
+      procedure_types
+    else
+      procedure_types.page(params[:page]).per(15)
+    end
   end
 
   def set_procedure_type
