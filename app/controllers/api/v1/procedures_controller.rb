@@ -124,7 +124,7 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
-    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier).order(created_at: :desc)
+    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier).order(id: :desc)
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
@@ -170,6 +170,12 @@ class Api::V1::ProceduresController < ApplicationController
       start_date = Date.new(params[:selectedYear].to_i, 1, 1)
       end_date = Date.new(params[:selectedYear].to_i, 12, 31)
       procedures = procedures.where(created_at: start_date..end_date)
+    end
+
+    # Add this block to filter by is_paid
+    if params[:showUnpaid].present?
+      show_unpaid = ActiveRecord::Type::Boolean.new.cast(params[:showUnpaid])
+      procedures = procedures.where(is_paid: false) if show_unpaid
     end
 
     procedures.page(params[:page]).per(15)
