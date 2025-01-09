@@ -178,6 +178,13 @@ class Api::V1::ProceduresController < ApplicationController
       procedures = procedures.where(is_paid: false) if show_unpaid
     end
 
+    # Move hasLicenses filter up to ensure it's applied early
+    if params[:hasLicenses].present?
+      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
+      procedures = procedures.joins(:procedure_type)
+        .where(procedure_types: { has_licenses: })
+    end
+
     procedures.page(params[:page]).per(15)
   end
 
