@@ -1,7 +1,7 @@
 class Procedure < ApplicationRecord
   belongs_to :user
   belongs_to :customer, optional: true
-  belongs_to :procedure_type, class_name: "ProcedureType"
+  belongs_to :procedure_type, class_name: 'ProcedureType'
   belongs_to :status
   belongs_to :license, optional: true
   belongs_to :processor, optional: true
@@ -22,7 +22,7 @@ class Procedure < ApplicationRecord
   before_validation :generate_code, on: :create
   before_validation :set_date, on: :create
 
-  validate :plate_uniqueness_by_type, on: %i[create update]
+  # validate :plate_uniqueness_by_type, on: %i[create update]
 
   def generate_code
     last_procedure = Procedure.last
@@ -43,9 +43,9 @@ class Procedure < ApplicationRecord
   def plate_uniqueness_by_type
     return unless plate_changed? || procedure_type_id_changed?
     return if procedure_type&.has_licenses? # Skip validation if procedure type requires licenses
-  
-    if Procedure.where(plate: plate, procedure_type_id: procedure_type_id).where.not(id: id).exists?
-      errors.add(:plate, "must be unique per procedure type")
-    end
+
+    return unless Procedure.where(plate:, procedure_type_id:).where.not(id:).exists?
+
+    errors.add(:plate, 'must be unique per procedure type')
   end
 end
