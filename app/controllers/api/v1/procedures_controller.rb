@@ -124,64 +124,44 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def all_procedures
+    puts "\n=== Debug Search Query ==="
+    puts "Search params: #{params[:search]}"
+    puts "hasLicenses param: #{params[:hasLicenses]}"
+
     procedures = Procedure
       .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier)
-      .joins(:customer, :procedure_type) # Add required joins
+      .joins(:procedure_type)
+      .left_joins(:customer) # Changed to left_joins for optional customers
       .order(id: :desc)
 
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
+      puts "Search term: #{search_term}"
+
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
         'LOWER(procedures.plate) LIKE :search OR ' \
-        'LOWER(customers.identification) LIKE :search OR ' \
-        'LOWER(customers.first_name) LIKE :search OR ' \
-        'LOWER(customers.last_name) LIKE :search OR ' \
-        "LOWER(CONCAT(customers.first_name, ' ', customers.last_name)) LIKE :search",
+        'LOWER(COALESCE(customers.identification, \'\')) LIKE :search OR ' \
+        'LOWER(COALESCE(customers.first_name, \'\')) LIKE :search OR ' \
+        'LOWER(COALESCE(customers.last_name, \'\')) LIKE :search',
         search: search_term
       )
     end
 
-    procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-
-    if params[:processorId].present?
-      procedures = if params[:processorId].to_i.zero?
-                     procedures.joins(:customer).where(customers: { is_direct: true }) # Filter by Processor Id 0
+    if params[:hasLicenses].present?
+      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
+      puts "Has licenses value: #{has_licenses}"
+      procedures = if has_licenses
+                     procedures.where(procedure_types: { has_licenses: true })
+                       .where.not(customers: { id: nil })
                    else
-                     procedures.where(processor_id: params[:processorId]) # Filter by Processor Id
+                     procedures.where(procedure_types: { has_licenses: false })
                    end
     end
 
-    # Filter procedures based on the presence of licenses
-    if params[:hasLicenses].present?
-      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
-      procedures = procedures.where(procedure_types: { has_licenses: })
-    end
-
-    procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
-    procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
-
-    if params[:startDate].present? && params[:endDate].present?
-      start_date = params[:startDate].to_date.beginning_of_day
-      end_date = params[:endDate].to_date.end_of_day
-      procedures = procedures.where(created_at: start_date..end_date)
-    elsif params[:startDate].present?
-      procedures = procedures.where('procedures.created_at >= ?', params[:startDate].to_date.beginning_of_day)
-    elsif params[:endDate].present?
-      procedures = procedures.where('procedures.created_at <= ?', params[:endDate].to_date.beginning_of_day)
-    end
-
-    if params[:selectedYear].present?
-      start_date = Date.new(params[:selectedYear].to_i, 1, 1)
-      end_date = Date.new(params[:selectedYear].to_i, 12, 31)
-      procedures = procedures.where(created_at: start_date..end_date)
-    end
-
-    # Add this block to filter by is_paid
-    if params[:showUnpaid].present?
-      show_unpaid = ActiveRecord::Type::Boolean.new.cast(params[:showUnpaid])
-      procedures = procedures.where(is_paid: false) if show_unpaid
-    end
+    puts "Final SQL: #{procedures.to_sql}"
+    puts "Result count: #{procedures.count}"
+    puts "=== End Debug ===\n"
 
     procedures.page(params[:page]).per(15)
   end
