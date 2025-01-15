@@ -159,7 +159,7 @@ class Api::V1::ProceduresController < ApplicationController
                    end
     end
 
-    puts "Final SQL: #{procedures.to_sql}"
+    puts "Final SQL Test: #{procedures.to_sql}"
     puts "Result count: #{procedures.count}"
     puts "=== End Debug ===\n"
 
