@@ -159,6 +159,38 @@ class Api::V1::ProceduresController < ApplicationController
                    end
     end
 
+    # Processor filter
+    if params[:processorId].present?
+      procedures = if params[:processorId].to_i.zero?
+                     procedures.joins(:customer).where(customers: { is_direct: true })
+                   else
+                     procedures.where(processor_id: params[:processorId])
+                   end
+    end
+
+    # Status filter
+    procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
+
+    # Independent Date Range Filters
+    if params[:startDate].present?
+      start_date = params[:startDate].to_date.beginning_of_day
+      procedures = procedures.where('procedures.created_at >= ?', start_date)
+    end
+
+    if params[:endDate].present?
+      end_date = params[:endDate].to_date.end_of_day
+      procedures = procedures.where('procedures.created_at <= ?', end_date)
+    end
+
+    # Fix Selected Year filter with explicit table reference
+    if params[:selectedYear].present?
+      year = params[:selectedYear].to_i
+      procedures = procedures.where('EXTRACT(YEAR FROM procedures.created_at) = ?', year)
+    end
+
+    # ShowUnpaid filter
+    procedures = procedures.where(is_paid: false) if params[:showUnpaid].present?
+
     puts "Final SQL Test: #{procedures.to_sql}"
     puts "Result count: #{procedures.count}"
     puts "=== End Debug ===\n"
