@@ -126,7 +126,7 @@ class Api::V1::ProceduresController < ApplicationController
   def all_procedures
     procedures = Procedure
       .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier)
-      .joins(:customer) # Add explicit JOIN
+      .joins(:customer, :procedure_type) # Add required joins
       .order(id: :desc)
 
     if params[:search].present?
@@ -155,7 +155,7 @@ class Api::V1::ProceduresController < ApplicationController
     # Filter procedures based on the presence of licenses
     if params[:hasLicenses].present?
       has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
-      procedures = has_licenses ? procedures.joins(:procedure_type).where(procedure_types: { has_licenses: true }) : procedures.joins(:procedure_type).where(procedure_types: { has_licenses: false })
+      procedures = procedures.where(procedure_types: { has_licenses: })
     end
 
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
@@ -181,13 +181,6 @@ class Api::V1::ProceduresController < ApplicationController
     if params[:showUnpaid].present?
       show_unpaid = ActiveRecord::Type::Boolean.new.cast(params[:showUnpaid])
       procedures = procedures.where(is_paid: false) if show_unpaid
-    end
-
-    # Move hasLicenses filter up to ensure it's applied early
-    if params[:hasLicenses].present?
-      has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
-      procedures = procedures.joins(:procedure_type)
-        .where(procedure_types: { has_licenses: })
     end
 
     procedures.page(params[:page]).per(15)
