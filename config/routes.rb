@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       end
       resources :payment_types, only: [:index, :show]
       resources :payments, only: [:index, :show, :create, :update, :destroy]
+      resources :agencies, only: [:index, :show, :create, :update, :destroy]
     end
   end
 end
