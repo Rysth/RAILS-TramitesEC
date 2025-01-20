@@ -1,6 +1,7 @@
 class Agency < ApplicationRecord
   # Callbacks
   before_validation :generate_code, on: :create
+  has_many :procedures, dependent: :nullify
 
   # Validations
   validates :code, presence: true, uniqueness: true

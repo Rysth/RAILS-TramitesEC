@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_01_20_222214) do
+ActiveRecord::Schema[7.1].define(version: 2025_01_20_230252) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -125,6 +125,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_222214) do
     t.datetime "updated_at", null: false
     t.float "supplier_amount", default: 0.0
     t.bigint "supplier_id"
+    t.bigint "agency_id"
+    t.index ["agency_id"], name: "index_procedures_on_agency_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
     t.index ["license_id"], name: "index_procedures_on_license_id"
     t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
@@ -188,6 +190,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_01_20_222214) do
   add_foreign_key "licenses", "license_types"
   add_foreign_key "payments", "payment_types"
   add_foreign_key "payments", "procedures"
+  add_foreign_key "procedures", "agencies"
   add_foreign_key "procedures", "customers"
   add_foreign_key "procedures", "licenses"
   add_foreign_key "procedures", "procedure_types"

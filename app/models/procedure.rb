@@ -6,6 +6,7 @@ class Procedure < ApplicationRecord
   belongs_to :license, optional: true
   belongs_to :processor, optional: true
   belongs_to :supplier, optional: true
+  belongs_to :agency, optional: true
 
   has_many :payments, dependent: :destroy
 
