@@ -118,7 +118,8 @@ class Api::V1::ProceduresController < ApplicationController
         procedure_type: { only: %i[id name has_licenses] },
         supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
-        status: { only: %i[id name] }
+        status: { only: %i[id name] },
+        agency: { only: %i[id code name has_licenses] }
       }
     )
   end
@@ -129,7 +130,7 @@ class Api::V1::ProceduresController < ApplicationController
     puts "hasLicenses param: #{params[:hasLicenses]}"
 
     procedures = Procedure
-      .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier)
+      .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier, :agency)
       .joins(:procedure_type)
       .left_joins(:customer) # Changed to left_joins for optional customers
       .order(id: :desc)
@@ -199,8 +200,13 @@ class Api::V1::ProceduresController < ApplicationController
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :supplier_amount, :supplier_id, :status_id, :created_at)
+    params.require(:procedure).permit(
+      :id, :plate, :cost, :cost_pending, :profit, :profit_pending,
+      :comments, :procedure_type_id, :processor_id, :customer_id,
+      :license_id, :supplier_amount, :supplier_id, :status_id,
+      :created_at, :agency_id, :code, :date, :is_paid, :active,
+      :user_id, :updated_at
+    )
   end
 
   def set_procedure
