@@ -1,12 +1,11 @@
 class Agency < ApplicationRecord
   # Callbacks
-  before_create :generate_code
+  before_validation :generate_code, on: :create
 
   # Validations
   validates :code, presence: true, uniqueness: true
   validates :name, presence: true, uniqueness: true
   validates :has_licenses, inclusion: { in: [true, false] }
-  validates :active, inclusion: { in: [true, false] }
 
   private
 
