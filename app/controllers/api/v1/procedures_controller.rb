@@ -43,7 +43,7 @@ class Api::V1::ProceduresController < ApplicationController
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
 
     # Query procedures within the specified date range and order by created_at in ascending order
-    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier])
+    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier agency])
 
     # Apply date range filtering if dates are provided
     procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day) if start_date && end_date
