@@ -55,8 +55,8 @@ class Api::V1::ProceduresController < ApplicationController
     package = Axlsx::Package.new
     workbook = package.workbook
     workbook.add_worksheet(name: 'Procedures') do |sheet|
-      # Add headers
-      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
+      # Add headers with new agency column
+      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Agencia', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
                      'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Abonado', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
 
@@ -70,11 +70,10 @@ class Api::V1::ProceduresController < ApplicationController
         procedure_is_paid = procedure.is_paid ? 'Pagado' : 'Pendiente'
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
         supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
+        agency_info = procedure.agency.present? ? procedure.agency.name.to_s : 'N/A'
 
-        payments_total = procedure.payments.sum(:value)
-
-        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info,
-                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, payments_total, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
+        body_rows = [procedure.id, procedure.created_at, procedure.code, agency_info, procedure_has_licenses, procedure_type_info, user_info, processor_info,
+                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
 
