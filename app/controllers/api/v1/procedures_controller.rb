@@ -71,9 +71,10 @@ class Api::V1::ProceduresController < ApplicationController
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
         supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
         agency_info = procedure.agency.present? ? procedure.agency.name.to_s : 'N/A'
+        payments_amount = procedure.payments.sum(:value)
 
         body_rows = [procedure.id, procedure.created_at, procedure.code, agency_info, procedure_has_licenses, procedure_type_info, user_info, processor_info,
-                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
+                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, payments_amount, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
 
