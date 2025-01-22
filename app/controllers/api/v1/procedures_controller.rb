@@ -88,7 +88,7 @@ class Api::V1::ProceduresController < ApplicationController
 
       # Add totals row with correct order
       totals_row = [
-        'Totales', '', '', '', '', '', '', '', '', '', '',
+        'Totales', '', '', '', '', '', '', '', '', '', '', '',
         total_cost, # Valor
         total_payments, # Valor Abonado
         total_cost_pending, # Valor Pendiente
