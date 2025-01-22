@@ -57,7 +57,7 @@ class Api::V1::ProceduresController < ApplicationController
     workbook.add_worksheet(name: 'Procedures') do |sheet|
       # Add headers
       header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
-                     'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
+                     'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Abonado', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
 
       # Add data for each procedure
@@ -71,8 +71,10 @@ class Api::V1::ProceduresController < ApplicationController
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
         supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
 
+        payments_total = procedure.payments.sum(:value)
+
         body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info,
-                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
+                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, payments_total, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
 
@@ -82,10 +84,20 @@ class Api::V1::ProceduresController < ApplicationController
       total_profit = procedures.sum(:profit)
       total_profit_pending = procedures.sum(:profit_pending)
       total_supplier_amount = procedures.sum(:supplier_amount)
+      total_payments = procedures.joins(:payments).sum('payments.value')
 
-      # Add totals row
-      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '',
-                    total_supplier_amount, '']
+      # Add totals row with correct order
+      totals_row = [
+        'Totales', '', '', '', '', '', '', '', '', '', '',
+        total_cost, # Valor
+        total_payments, # Valor Abonado
+        total_cost_pending, # Valor Pendiente
+        total_profit, # Ganancia
+        total_profit_pending, # Ganancia Pendiente
+        '', # Proveedor
+        total_supplier_amount, # Valor a Proveedor
+        '' # Comentarios
+      ]
       sheet.add_row totals_row
     end
 
