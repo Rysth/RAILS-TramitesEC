@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine  # Keep version 16 since your data was initialized with it
+    container_name: tramites_ec_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: rails_user
+      POSTGRES_PASSWORD: rails_password
+      POSTGRES_DB: tramites_ec_development
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tramites_ec_web
+    command: >
+      /bin/bash -c "
+        bundle install &&
+        rm -f /rails/tmp/pids/server.pid &&
+        bundle exec rails server -b 0.0.0.0 -p 3000
+      "
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+      - node_modules:/rails/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: "postgresql://rails_user:rails_password@db:5432/tramites_ec_development"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  bundle_cache:
+  node_modules:
