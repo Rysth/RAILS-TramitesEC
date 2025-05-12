@@ -5,9 +5,9 @@ Rails.application.routes.draw do
       get 'payment_types/index'
       get 'payment_types/show'
       resources :profiles, only: [:show]
-      resources :users, only: [:index, :show]  
+      resources :users, only: [:index, :show]
       get 'processors/search_processors', to: 'processors#search_processors'
-      resources :processors  do
+      resources :processors do
         get 'generate_excel', on: :collection
       end
       get 'suppliers/search_suppliers', to: 'suppliers#search_suppliers'
@@ -18,7 +18,7 @@ Rails.application.routes.draw do
       resources :customers do
         get 'generate_excel', on: :collection
       end
-      resources :procedure_types, only: [:index]
+      resources :procedure_types, only: [:index, :show, :create, :update, :destroy]
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]
@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       end
       resources :payment_types, only: [:index, :show]
       resources :payments, only: [:index, :show, :create, :update, :destroy]
+      resources :agencies, only: [:index, :show, :create, :update, :destroy]
     end
   end
 end

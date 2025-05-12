@@ -25,18 +25,27 @@ class Api::V1::PaymentsController < ApplicationController
       return
     end
 
-    if @payment.save
-      new_cost_pending = [0, procedure.cost_pending - @payment.value].max
-      procedure.update(cost_pending: new_cost_pending)
+    # Use a transaction to ensure that the updates are atomic
+    ActiveRecord::Base.transaction do
+      if @payment.save
+        new_cost_pending = [0, procedure.cost_pending - @payment.value].max
+        procedure.update(cost_pending: new_cost_pending)
 
-      # Check if the new cost_pending is zero and update profit_pending accordingly
-      procedure.update(profit_pending: 0, is_paid: true) if new_cost_pending.zero?
+        # Update profit_pending accordingly
+        if new_cost_pending.zero?
+          procedure.update(profit_pending: 0, is_paid: true)
+          puts "Procedure is fully paid"
+        else
+          procedure.update(profit_pending: procedure.profit)
+        end
 
-      render json: @payment, status: :created
-    else
-      render json: @payment.errors, status: :unprocessable_entity
+        render json: @payment, status: :created
+      else
+        render json: @payment.errors, status: :unprocessable_entity
+      end
     end
   end
+
 
   # PATCH/PUT /api/v1/payments/:id
   def update
@@ -49,15 +58,25 @@ class Api::V1::PaymentsController < ApplicationController
 
   def destroy
     procedure = @payment.procedure
-
-    if @payment.destroy
-      new_cost_pending = procedure.cost_pending + @payment.value
-      procedure.update(cost_pending: new_cost_pending, is_paid: false, profit_pending: procedure.profit)
-      head :no_content
-    else
-      render json: @payment.errors, status: :unprocessable_entity
+  
+    # Use a transaction to ensure atomicity
+    ActiveRecord::Base.transaction do
+      if @payment.destroy
+        new_cost_pending = procedure.cost_pending + @payment.value
+  
+        if new_cost_pending > procedure.cost
+          procedure.update(cost_pending: procedure.cost, is_paid: false, profit_pending: procedure.profit)
+        else
+          procedure.update(cost_pending: new_cost_pending, is_paid: false, profit_pending: procedure.profit)
+        end
+  
+        head :no_content
+      else
+        render json: @payment.errors, status: :unprocessable_entity
+      end
     end
   end
+  
 
   private
 

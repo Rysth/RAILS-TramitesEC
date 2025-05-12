@@ -41,27 +41,25 @@ class Api::V1::ProceduresController < ApplicationController
     # Extract start_date and end_date from params
     start_date = params[:start_date].present? ? Date.parse(params[:start_date]) : nil
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
-  
+
     # Query procedures within the specified date range and order by created_at in ascending order
-    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier])
-  
+    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier agency])
+
     # Apply date range filtering if dates are provided
-    if start_date && end_date
-      procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-    end
-  
+    procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day) if start_date && end_date
+
     # Order procedures by created_at in ascending order
     procedures = procedures.order(created_at: :asc)
-  
+
     # Generate Excel file using axlsx_rails gem
     package = Axlsx::Package.new
     workbook = package.workbook
     workbook.add_worksheet(name: 'Procedures') do |sheet|
-      # Add headers
-      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
-                     'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
+      # Add headers with new agency column
+      header_rows = ['ID', 'Fecha de Creación', 'Código del Trámite', 'Agencia', 'Tipo de Trámite', 'Trámite', 'Usuario', 'Trámitador', 'Cliente', 'Placa',
+                     'Estado del Trámite', 'Estado del Pago', 'Valor', 'Valor Abonado', 'Valor Pendiente', 'Ganancia', 'Ganancia Pendiente', 'Proveedor', 'Valor a Proveedor', 'Comentarios']
       sheet.add_row header_rows
-  
+
       # Add data for each procedure
       procedures.each do |procedure|
         user_info = procedure.user.present? ? procedure.user.username.to_s : 'N/A'
@@ -71,31 +69,41 @@ class Api::V1::ProceduresController < ApplicationController
         processor_info = procedure.processor.present? ? "#{procedure.processor.first_name} #{procedure.processor.last_name}" : 'Cliente Directo'
         procedure_is_paid = procedure.is_paid ? 'Pagado' : 'Pendiente'
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
-        supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : "N/A"
-  
-        body_rows = [procedure.id, procedure.created_at, procedure.code, procedure_has_licenses, procedure_type_info, user_info, processor_info,
-                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
+        supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
+        agency_info = procedure.agency.present? ? procedure.agency.name.to_s : 'N/A'
+        payments_amount = procedure.payments.sum(:value)
+
+        body_rows = [procedure.id, procedure.created_at, procedure.code, agency_info, procedure_has_licenses, procedure_type_info, user_info, processor_info,
+                     customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, payments_amount, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
         sheet.add_row body_rows
       end
-  
+
       # Calculate totals
       total_cost = procedures.sum(:cost)
       total_cost_pending = procedures.sum(:cost_pending)
       total_profit = procedures.sum(:profit)
       total_profit_pending = procedures.sum(:profit_pending)
       total_supplier_amount = procedures.sum(:supplier_amount)
-  
-      # Add totals row
-      totals_row = ['Totales', '', '', '', '', '', '', '', '', '', '', total_cost, total_cost_pending, total_profit, total_profit_pending, '',
-                    total_supplier_amount, '']
+      total_payments = procedures.joins(:payments).sum('payments.value')
+
+      # Add totals row with correct order
+      totals_row = [
+        'Totales', '', '', '', '', '', '', '', '', '', '', '',
+        total_cost, # Valor
+        total_payments, # Valor Abonado
+        total_cost_pending, # Valor Pendiente
+        total_profit, # Ganancia
+        total_profit_pending, # Ganancia Pendiente
+        '', # Proveedor
+        total_supplier_amount, # Valor a Proveedor
+        '' # Comentarios
+      ]
       sheet.add_row totals_row
     end
-  
+
     # Set the content type for the response and send the file
     send_data package.to_stream.read, type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename: 'procedures.xlsx'
   end
-  
-  
 
   private
 
@@ -117,66 +125,100 @@ class Api::V1::ProceduresController < ApplicationController
     procedure.as_json(
       include: {
         user: { only: %i[id username] },
-        customer: { only: %i[id identification first_name last_name is_direct] },
-        processor: { only: %i[id code first_name last_name] },
+        customer: { only: %i[id identification first_name last_name is_direct phone] },
+        processor: { only: %i[id code first_name last_name phone] },
         procedure_type: { only: %i[id name has_licenses] },
         supplier: { only: %i[id identification name] },
         license: { only: %i[id name] },
         status: { only: %i[id name] },
+        agency: { only: %i[id code name has_licenses] }
       }
     )
   end
 
   def all_procedures
-    procedures = Procedure.includes(:user, :customer, :processor, :procedure_type, :license, :status).order(id: :desc)
-    
+    puts "\n=== Debug Search Query ==="
+    puts "Search params: #{params[:search]}"
+    puts "hasLicenses param: #{params[:hasLicenses]}"
+
+    procedures = Procedure
+      .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier, :agency)
+      .joins(:procedure_type)
+      .left_joins(:customer) # Changed to left_joins for optional customers
+      .order(id: :desc)
+
     if params[:search].present?
       search_term = "%#{params[:search].downcase}%"
-      procedures = procedures.includes(:customer)
+      puts "Search term: #{search_term}"
+
       procedures = procedures.where(
         'LOWER(procedures.code) LIKE :search OR ' \
         'LOWER(procedures.plate) LIKE :search OR ' \
-        'LOWER(CONCAT(customers.first_name, \' \', customers.last_name)) LIKE :search',
+        'LOWER(COALESCE(customers.identification, \'\')) LIKE :search OR ' \
+        'LOWER(COALESCE(customers.first_name, \'\')) LIKE :search OR ' \
+        'LOWER(COALESCE(customers.last_name, \'\')) LIKE :search',
         search: search_term
       )
     end
 
-    procedures = procedures.where(user_id: params[:userId]) if params[:userId].present?
-    
-    if params[:processorId].present?
-      if params[:processorId].to_i.zero?
-        procedures = procedures.joins(:customer).where(customers: { is_direct: true }) # Filter by Processor Id 0
-      else
-        procedures = procedures.where(processor_id: params[:processorId]) # Filter by Processor Id
-      end
-    end
-
-     # Filter procedures based on the presence of licenses
     if params[:hasLicenses].present?
       has_licenses = ActiveRecord::Type::Boolean.new.cast(params[:hasLicenses])
-      procedures = has_licenses ? procedures.joins(:procedure_type).where(procedure_types: { has_licenses: true }) : procedures.joins(:procedure_type).where(procedure_types: { has_licenses: false })
+      puts "Has licenses value: #{has_licenses}"
+      procedures = if has_licenses
+                     procedures.where(procedure_types: { has_licenses: true })
+                       .where.not(customers: { id: nil })
+                   else
+                     procedures.where(procedure_types: { has_licenses: false })
+                   end
     end
 
+    # Processor filter
+    if params[:processorId].present?
+      procedures = if params[:processorId].to_i.zero?
+                     procedures.joins(:customer).where(customers: { is_direct: true })
+                   else
+                     procedures.where(processor_id: params[:processorId])
+                   end
+    end
+
+    # Status filter
     procedures = procedures.where(status_id: params[:statusId]) if params[:statusId].present?
-    procedures = procedures.where(procedure_type_id: params[:procedureTypeId]) if params[:procedureTypeId].present?
 
-    if params[:startDate].present? && params[:endDate].present?
-      start_date = (params[:startDate].to_date + 1.day).beginning_of_day
-      end_date = (params[:endDate].to_date + 1.day).end_of_day
-      procedures = procedures.where(created_at: start_date..end_date)
-    elsif params[:startDate].present?
-      procedures = procedures.where('created_at >= ?', params[:startDate])
-    elsif params[:endDate].present?
-      procedures = procedures.where('created_at <= ?', params[:endDate])
+    # Independent Date Range Filters
+    if params[:startDate].present?
+      start_date = params[:startDate].to_date.beginning_of_day
+      procedures = procedures.where('procedures.created_at >= ?', start_date)
     end
-  
+
+    if params[:endDate].present?
+      end_date = params[:endDate].to_date.end_of_day
+      procedures = procedures.where('procedures.created_at <= ?', end_date)
+    end
+
+    # Fix Selected Year filter with explicit table reference
+    if params[:selectedYear].present?
+      year = params[:selectedYear].to_i
+      procedures = procedures.where('EXTRACT(YEAR FROM procedures.created_at) = ?', year)
+    end
+
+    # ShowUnpaid filter
+    procedures = procedures.where(is_paid: false) if params[:showUnpaid].present?
+
+    puts "Final SQL Test: #{procedures.to_sql}"
+    puts "Result count: #{procedures.count}"
+    puts "=== End Debug ===\n"
 
     procedures.page(params[:page]).per(15)
   end
 
   def procedure_params
-    params.require(:procedure).permit(:id, :plate, :cost, :cost_pending, :profit, :profit_pending, :comments, :procedure_type_id, :processor_id,
-                                      :customer_id, :license_id, :supplier_amount, :supplier_id, :status_id, :created_at)
+    params.require(:procedure).permit(
+      :id, :plate, :cost, :cost_pending, :profit, :profit_pending,
+      :comments, :procedure_type_id, :processor_id, :customer_id,
+      :license_id, :supplier_amount, :supplier_id, :status_id,
+      :created_at, :agency_id, :code, :date, :is_paid, :active,
+      :user_id, :updated_at
+    )
   end
 
   def set_procedure
