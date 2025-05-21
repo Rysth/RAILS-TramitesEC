@@ -203,6 +203,12 @@ class Api::V1::ProceduresController < ApplicationController
 
     # ShowUnpaid filter
     procedures = procedures.where(is_paid: false) if params[:showUnpaid].present?
+    
+    # Primera Vez filter - add this section
+    if params[:showPrimeraVez].present?
+      primera_vez_type = ProcedureType.find_by(name: 'Primera Vez')
+      procedures = procedures.where(procedure_type_id: primera_vez_type.id) if primera_vez_type
+    end
 
     puts "Final SQL Test: #{procedures.to_sql}"
     puts "Result count: #{procedures.count}"
