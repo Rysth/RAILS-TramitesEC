@@ -23,7 +23,7 @@ class Procedure < ApplicationRecord
   before_validation :generate_code, on: :create
   before_validation :set_date, on: :create
 
-  # validate :plate_uniqueness_by_type, on: %i[create update]
+  validate :plate_uniqueness_by_type_and_year, on: %i[create update]
 
   def generate_code
     last_procedure = Procedure.last
@@ -41,12 +41,22 @@ class Procedure < ApplicationRecord
     self.is_paid = true if cost_pending.zero? && profit_pending.zero?
   end
 
-  def plate_uniqueness_by_type
-    return unless plate_changed? || procedure_type_id_changed?
-    return if procedure_type&.has_licenses? # Skip validation if procedure type requires licenses
+  def plate_uniqueness_by_type_and_year
+    return if plate.blank? # Skip if no plate is provided
+    return if procedure_type&.has_licenses? # Skip validation if procedure type requires licenses (only for vehicular)
 
-    return unless Procedure.where(plate:, procedure_type_id:).where.not(id:).exists?
+    # Get the year from the created_at or current year if creating
+    procedure_year = created_at&.year || Date.current.year
 
-    errors.add(:plate, 'must be unique per procedure type')
+    # Look for existing procedures with same plate, procedure type, and year
+    existing_procedure = Procedure.joins(:procedure_type)
+                                  .where(plate: plate, procedure_type_id: procedure_type_id)
+                                  .where('EXTRACT(YEAR FROM procedures.created_at) = ?', procedure_year)
+                                  .where.not(id: id) # Exclude current record for updates
+
+    if existing_procedure.exists?
+      existing_record = existing_procedure.first
+      errors.add(:plate, "Ya existe un trámite con esta placa en el año #{procedure_year}. Código del trámite existente: #{existing_record.code}")
+    end
   end
 end
