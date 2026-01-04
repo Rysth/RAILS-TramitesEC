@@ -181,6 +181,11 @@ class Api::V1::ProceduresController < ApplicationController
                    end
     end
 
+    if params[:showPrimeraVez].present?
+      only_primera_vez = ActiveRecord::Type::Boolean.new.cast(params[:showPrimeraVez])
+      procedures = procedures.where(procedure_types: { name: 'Primera Vez' }) if only_primera_vez
+    end
+
     # Processor filter
     if params[:processorId].present?
       procedures = if params[:processorId].to_i.zero?
