@@ -36,5 +36,5 @@ RUN chmod +x /rails/bin/*
 # Sidekiq doesn't need assets, but we still need to ensure the config is available
 # No asset precompilation needed for worker
 
-# Run Sidekiq as the main process
-CMD ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+# Run migrations, then Sidekiq as the main process
+CMD ["sh", "-lc", "bundle exec rails db:migrate && bundle exec sidekiq -C config/sidekiq.yml"]

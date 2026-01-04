@@ -36,5 +36,5 @@ RUN SECRET_KEY_BASE=dummy bundle exec rails assets:precompile
 
 EXPOSE 3000
 
-# Default command: Puma via Rails config
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# Default command: run migrations, then Puma via Rails config
+CMD ["sh", "-lc", "bundle exec rails db:migrate && bundle exec puma -C config/puma.rb"]
