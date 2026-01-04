@@ -103,8 +103,17 @@ class Api::V1::ProcessorsController < ApplicationController
 
     is_admin = params[:is_admin] == 'true' if params[:is_admin].present?
 
+    # Precompute procedure aggregates to avoid N+1 queries
+    procedures_scope = Procedure.all
+    if start_date && end_date
+      procedures_scope = procedures_scope.where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+    end
+
+    procedures_cost = procedures_scope.group(:processor_id).sum(:cost)
+    procedures_profit = procedures_scope.group(:processor_id).sum(:profit)
+
     # Generate Excel file using axlsx_rails gem
-    package = Axlsx::Package.new
+    package = Axlsx::Package.new(use_shared_strings: true)
     workbook = package.workbook
     workbook.add_worksheet(name: 'Trámitadores') do |sheet|
       # Add headers
@@ -118,19 +127,16 @@ class Api::V1::ProcessorsController < ApplicationController
       total_cost_all = 0
       total_profit_all = 0
 
-      processors.each do |processor|
-        # Calculate total values for the current processor
-        has_procedures = processor.procedures.count.positive?
-
+      processors.find_each(batch_size: 500) do |processor|
         total_clients = processor.customers_count
         total_procedures = processor.procedures_count
-        total_cost = processor.procedures.sum(:cost) if has_procedures
-        total_profit = processor.procedures.sum(:profit) if has_procedures
+        total_cost = procedures_cost[processor.id] || 0
+        total_profit = procedures_profit[processor.id] || 0
 
         total_clients_all += total_clients
         total_procedures_all += total_procedures
-        total_cost_all += total_cost if has_procedures
-        total_profit_all += total_profit if has_procedures
+        total_cost_all += total_cost
+        total_profit_all += total_profit
 
         body_rows = [processor.id, processor.user.username, processor.code, processor.first_name, processor.last_name, processor.phone,
                      processor.created_at, total_clients, total_procedures]

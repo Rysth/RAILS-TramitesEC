@@ -43,16 +43,18 @@ class Api::V1::ProceduresController < ApplicationController
     end_date = params[:end_date].present? ? Date.parse(params[:end_date]) : nil
 
     # Query procedures within the specified date range and order by created_at in ascending order
-    procedures = Procedure.includes(%i[user customer processor procedure_type status supplier agency])
+    procedures = Procedure
+      .includes(:user, :customer, :processor, :procedure_type, :status, :supplier, :agency)
+      .order(created_at: :asc)
 
     # Apply date range filtering if dates are provided
     procedures = procedures.where(created_at: start_date.beginning_of_day..end_date.end_of_day) if start_date && end_date
 
-    # Order procedures by created_at in ascending order
-    procedures = procedures.order(created_at: :asc)
+    # Preload payment totals to avoid N+1 queries during export
+    payments_by_procedure = Payment.group(:procedure_id).sum(:value)
 
     # Generate Excel file using axlsx_rails gem
-    package = Axlsx::Package.new
+    package = Axlsx::Package.new(use_shared_strings: true)
     workbook = package.workbook
     workbook.add_worksheet(name: 'Procedures') do |sheet|
       # Add headers with new agency column
@@ -61,7 +63,7 @@ class Api::V1::ProceduresController < ApplicationController
       sheet.add_row header_rows
 
       # Add data for each procedure
-      procedures.each do |procedure|
+      procedures.find_each(batch_size: 500) do |procedure|
         user_info = procedure.user.present? ? procedure.user.username.to_s : 'N/A'
         customer_info = procedure.customer.present? ? "#{procedure.customer.first_name} #{procedure.customer.last_name}" : 'N/A'
         procedure_type_info = procedure.procedure_type.present? ? procedure.procedure_type.name.to_s : 'N/A'
@@ -71,7 +73,7 @@ class Api::V1::ProceduresController < ApplicationController
         status_info = procedure.status.present? ? procedure.status.name.to_s : 'N/A'
         supplier_info = procedure.supplier.present? ? procedure.supplier.name.to_s : 'N/A'
         agency_info = procedure.agency.present? ? procedure.agency.name.to_s : 'N/A'
-        payments_amount = procedure.payments.sum(:value)
+        payments_amount = payments_by_procedure[procedure.id] || 0
 
         body_rows = [procedure.id, procedure.created_at, procedure.code, agency_info, procedure_has_licenses, procedure_type_info, user_info, processor_info,
                      customer_info, procedure.plate, status_info, procedure_is_paid, procedure.cost, payments_amount, procedure.cost_pending, procedure.profit, procedure.profit_pending, supplier_info, procedure.supplier_amount, procedure.comments]
