@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_04_144606) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_04_200000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -135,10 +135,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_04_144606) do
     t.bigint "supplier_id"
     t.bigint "agency_id"
     t.bigint "course_id"
+    t.integer "notification_days"
+    t.datetime "notification_scheduled_at"
+    t.boolean "notification_sent", default: false
+    t.datetime "notification_sent_at"
     t.index ["agency_id"], name: "index_procedures_on_agency_id"
     t.index ["course_id"], name: "index_procedures_on_course_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
     t.index ["license_id"], name: "index_procedures_on_license_id"
+    t.index ["notification_scheduled_at"], name: "index_procedures_on_notification_scheduled_at"
+    t.index ["notification_sent"], name: "index_procedures_on_notification_sent"
     t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
