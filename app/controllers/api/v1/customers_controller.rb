@@ -99,10 +99,26 @@ class Api::V1::CustomersController < ApplicationController
 
   def search_from_procedures
     query = "%#{params[:query].downcase}%"
-    customers = Customer.where('LOWER(identification) LIKE :query OR LOWER(CONCAT(first_name, \' \', last_name)) LIKE :query',
-                               query: "%#{query}%").order(created_at: :desc).page(1)
-    customers = customers.where(processor_id: params[:processorId]) if params.key?(:processorId) && params[:processorId].present?
-    render json: customers.as_json(only: %i[id identification first_name last_name is_direct])
+      raw_query = params[:query].to_s.strip.downcase
+
+      customers = Customer.left_outer_joins(:procedures)
+                           .order(created_at: :desc)
+
+      if raw_query.present?
+        like_query = "%#{raw_query}%"
+        customers = customers.where(
+          'LOWER(customers.identification) LIKE :q OR LOWER(customers.email) LIKE :q OR LOWER(CONCAT(customers.first_name, \' \' , customers.last_name)) LIKE :q OR LOWER(procedures.code) LIKE :q',
+          q: like_query
+        )
+      end
+
+      if params.key?(:processorId) && params[:processorId].present?
+        customers = customers.where(processor_id: params[:processorId])
+      end
+
+      customers = customers.distinct.limit(20)
+
+      render json: customers.as_json(only: %i[id identification first_name last_name email phone is_direct])
   end
 
   def generate_excel

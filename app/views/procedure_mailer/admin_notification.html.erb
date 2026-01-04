@@ -42,6 +42,14 @@
       <p><strong>Licencia:</strong> <%= @license&.name || 'N/A' %></p>
       <p><strong>Curso:</strong> <%= @course&.name || 'N/A' %></p>
       <p><strong>Fecha de envío:</strong> <%= Time.current.strftime('%d/%m/%Y %H:%M') %></p>
+      <% phone = @customer&.phone.to_s.gsub(/\D/, '') %>
+      <% if phone.present? %>
+        <p>
+          <a href="https://wa.me/<%= phone %>" style="display:inline-block;background-color:#25D366;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:bold;" target="_blank" rel="noopener">
+            📱 Enviar WhatsApp
+          </a>
+        </p>
+      <% end %>
     </div>
   </div>
 </body>
