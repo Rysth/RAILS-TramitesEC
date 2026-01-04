@@ -21,6 +21,9 @@ class ProcedureMailer < ApplicationMailer
   def admin_notification(procedure)
     @procedure = procedure
     @customer = procedure.customer
+    @license = procedure.license
+    @course = procedure.course
+    @procedure_type = procedure.procedure_type
 
     # Get all admin notification emails
     admin_emails = User.admin_notification_emails

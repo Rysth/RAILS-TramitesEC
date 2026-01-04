@@ -6,4 +6,7 @@ Se ha enviado una notificación de recordatorio al cliente:
 Trámite: <%= @procedure.code %>
 Cliente: <%= @customer&.first_name %> <%= @customer&.last_name %>
 Email: <%= @customer&.email %>
+Tipo: <%= @procedure_type&.name %>
+Licencia: <%= @license&.name || 'N/A' %>
+Curso: <%= @course&.name || 'N/A' %>
 Fecha de envío: <%= Time.current.strftime('%d/%m/%Y %H:%M') %>

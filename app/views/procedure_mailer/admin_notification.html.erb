@@ -38,6 +38,9 @@
       <p><strong>Trámite:</strong> <%= @procedure.code %></p>
       <p><strong>Cliente:</strong> <%= @customer&.first_name %> <%= @customer&.last_name %></p>
       <p><strong>Email:</strong> <%= @customer&.email %></p>
+      <p><strong>Tipo:</strong> <%= @procedure_type&.name %></p>
+      <p><strong>Licencia:</strong> <%= @license&.name || 'N/A' %></p>
+      <p><strong>Curso:</strong> <%= @course&.name || 'N/A' %></p>
       <p><strong>Fecha de envío:</strong> <%= Time.current.strftime('%d/%m/%Y %H:%M') %></p>
     </div>
   </div>
