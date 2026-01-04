@@ -85,3 +85,8 @@ gem 'rack-cors'
 gem 'tailwindcss-rails', '~> 2.0'
 
 gem 'kaminari'
+
+# Background job processing
+gem 'sidekiq', '~> 7.0'
+gem 'sidekiq-scheduler', '~> 5.0'
+gem 'redis', '~> 5.0'

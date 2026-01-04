@@ -1,0 +1,7 @@
+# Schedule for recurring jobs
+# Process pending notifications every hour
+process_pending_notifications:
+  cron: '0 * * * *'  # Every hour at minute 0
+  class: ProcessPendingNotificationsJob
+  queue: notifications
+  description: 'Check and send pending procedure notifications'

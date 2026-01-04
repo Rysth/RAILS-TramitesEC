@@ -33,6 +33,11 @@ Rails.application.routes.draw do
       resources :payment_types, only: [:index, :show]
       resources :payments, only: [:index, :show, :create, :update, :destroy]
       resources :agencies, only: [:index, :show, :create, :update, :destroy]
+
+      # Notifications endpoints (admin only)
+      get 'notifications/pending', to: 'notifications#pending'
+      post 'notifications/:procedure_id/send', to: 'notifications#send_notification'
+      post 'notifications/process', to: 'notifications#process_all'
     end
   end
 end

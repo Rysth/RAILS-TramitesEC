@@ -127,7 +127,7 @@ class Api::V1::ProceduresController < ApplicationController
     procedure.as_json(
       include: {
         user: { only: %i[id username] },
-        customer: { only: %i[id identification first_name last_name is_direct phone] },
+        customer: { only: %i[id identification first_name last_name is_direct phone email] },
         processor: { only: %i[id code first_name last_name phone] },
         procedure_type: { only: %i[id name has_licenses] },
         supplier: { only: %i[id identification name] },
@@ -135,7 +135,13 @@ class Api::V1::ProceduresController < ApplicationController
         status: { only: %i[id name] },
         agency: { only: %i[id code name has_licenses] },
         course: { only: %i[id name] }
-      }
+      },
+      methods: [:primera_vez_license?]
+    ).merge(
+      notification_days: procedure.notification_days,
+      notification_scheduled_at: procedure.notification_scheduled_at,
+      notification_sent: procedure.notification_sent,
+      notification_sent_at: procedure.notification_sent_at
     )
   end
 
@@ -220,7 +226,7 @@ class Api::V1::ProceduresController < ApplicationController
       :comments, :procedure_type_id, :processor_id, :customer_id,
       :license_id, :supplier_amount, :supplier_id, :status_id,
       :created_at, :agency_id, :code, :date, :is_paid, :active,
-      :user_id, :updated_at, :course_id
+      :user_id, :updated_at, :course_id, :notification_days
     )
   end
 

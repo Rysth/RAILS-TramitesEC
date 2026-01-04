@@ -18,11 +18,52 @@ class Procedure < ApplicationRecord
   validates :profit, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :profit_pending, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :is_paid, inclusion: { in: [true, false] }
+  validates :notification_days, inclusion: { in: [1, 7, 15, 30, nil] }
 
   validates :user, :procedure_type, :status, presence: true
 
   before_validation :generate_code, on: :create
   before_validation :set_date, on: :create
+  before_save :schedule_notification, if: :should_schedule_notification?
+
+  # Notification duration options (in days)
+  NOTIFICATION_OPTIONS = {
+    1 => '1 día',
+    7 => '7 días',
+    15 => '15 días',
+    30 => '1 mes'
+  }.freeze
+
+  # Scope to find procedures that need notification
+  scope :pending_notifications, -> {
+    where(notification_sent: false)
+      .where.not(notification_scheduled_at: nil)
+      .where('notification_scheduled_at <= ?', Time.current)
+  }
+
+  # Check if this is a "Primera Vez" license procedure
+  def primera_vez_license?
+    procedure_type&.has_licenses? && procedure_type&.name == 'Primera Vez'
+  end
+
+  # Schedule notification based on notification_days
+  def schedule_notification
+    return unless notification_days.present? && primera_vez_license?
+
+    self.notification_scheduled_at = Time.current + notification_days.days
+    self.notification_sent = false
+    self.notification_sent_at = nil
+  end
+
+  # Determine if we should schedule a notification
+  def should_schedule_notification?
+    notification_days_changed? && notification_days.present? && primera_vez_license?
+  end
+
+  # Mark notification as sent
+  def mark_notification_sent!
+    update!(notification_sent: true, notification_sent_at: Time.current)
+  end
 
   # validate :plate_uniqueness_by_type, on: %i[create update]
 

@@ -1,0 +1,9 @@
+TrámitesEC Admin - Notificación Enviada
+=======================================
+
+Se ha enviado una notificación de recordatorio al cliente:
+
+Trámite: <%= @procedure.code %>
+Cliente: <%= @customer&.first_name %> <%= @customer&.last_name %>
+Email: <%= @customer&.email %>
+Fecha de envío: <%= Time.current.strftime('%d/%m/%Y %H:%M') %>

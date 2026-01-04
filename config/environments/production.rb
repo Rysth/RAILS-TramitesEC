@@ -73,6 +73,22 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  # SMTP Settings for Hostinger
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.default_url_options = { host: ENV.fetch('APP_HOST', 'tramitesec.com') }
+
+  config.action_mailer.smtp_settings = {
+    address: ENV.fetch('SMTP_ADDRESS', 'smtp.hostinger.com'),
+    port: ENV.fetch('SMTP_PORT', 465).to_i,
+    domain: ENV.fetch('SMTP_DOMAIN', 'rysthdesign.com'),
+    user_name: ENV.fetch('SMTP_USERNAME', 'support@rysthdesign.com'),
+    password: ENV.fetch('SMTP_PASSWORD', ''),
+    authentication: :login,
+    ssl: true,
+    enable_starttls_auto: false
+  }
+
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
   # config.action_mailer.raise_delivery_errors = false

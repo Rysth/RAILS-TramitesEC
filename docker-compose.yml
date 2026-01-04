@@ -16,6 +16,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: tramites_ec_redis
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   web:
     build:
       context: .
@@ -45,12 +58,39 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: "postgresql://rails_user:rails_password@db:5432/tramites_ec_development"
+      REDIS_URL: "redis://redis:6379/0"
       RUN_SEEDS: "false"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tramites_ec_sidekiq
+    command: >
+      /bin/bash -c "
+        bundle install &&
+        bundle exec sidekiq -C config/sidekiq.yml
+      "
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: "postgresql://rails_user:rails_password@db:5432/tramites_ec_development"
+      REDIS_URL: "redis://redis:6379/0"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:
   postgres_data:
   bundle_cache:
   node_modules:
+  redis_data:

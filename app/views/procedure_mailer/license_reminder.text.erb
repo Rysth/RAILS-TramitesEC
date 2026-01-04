@@ -1,0 +1,25 @@
+TrámitesEC - Recordatorio de Licencia
+=====================================
+
+Estimado/a <%= @customer&.first_name %> <%= @customer&.last_name %>,
+
+Le enviamos este recordatorio sobre su trámite de licencia <%= @procedure_type&.name %> registrado en TrámitesEC.
+
+DETALLES DEL TRÁMITE
+--------------------
+Código: <%= @procedure.code %>
+Tipo: <%= @procedure_type&.name %>
+Licencia: <%= @license&.name || 'N/A' %>
+<% if @course.present? %>
+Curso: <%= @course.name %>
+<% end %>
+Fecha: <%= @procedure.date.strftime('%d/%m/%Y') %>
+
+Si tiene alguna pregunta o necesita asistencia adicional, no dude en contactarnos.
+
+Atentamente,
+El equipo de TrámitesEC
+
+---
+Este es un correo automático. Por favor no responda directamente a este mensaje.
+© <%= Time.current.year %> TrámitesEC - Todos los derechos reservados
