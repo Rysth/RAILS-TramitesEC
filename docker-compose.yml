@@ -32,7 +32,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: tramites_ec_web
     command: >
       /bin/bash -c "
@@ -69,7 +69,7 @@ services:
   sidekiq:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: tramites_ec_sidekiq
     command: >
       /bin/bash -c "

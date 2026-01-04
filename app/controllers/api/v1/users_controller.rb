@@ -79,11 +79,11 @@ class Api::V1::UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:username, :email, :password, :password_confirmation, :is_admin, :active)
+    params.require(:user).permit(:username, :email, :password, :password_confirmation, :is_admin, :active, :notification_email)
   end
 
   def user_json(user)
-    user.as_json(only: %i[id username email is_admin active created_at updated_at])
+    user.as_json(only: %i[id username email is_admin active notification_email created_at updated_at])
   end
 
   def render_users_response

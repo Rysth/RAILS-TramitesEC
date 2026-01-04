@@ -17,12 +17,19 @@ class ProcedureMailer < ApplicationMailer
   end
 
   # Admin notification when a procedure reminder is sent
+  # Sends to all admin users who have notification_email configured
   def admin_notification(procedure)
     @procedure = procedure
     @customer = procedure.customer
 
+    # Get all admin notification emails
+    admin_emails = User.admin_notification_emails
+
+    # Return if no admin has configured notification email
+    return if admin_emails.empty?
+
     mail(
-      to: 'support@rysthdesign.com',
+      to: admin_emails,
       subject: "Notificación enviada - Trámite #{procedure.code}"
     )
   end
