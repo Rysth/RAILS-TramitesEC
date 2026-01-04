@@ -7,11 +7,11 @@ FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 # Rails app lives here
 WORKDIR /rails
 
-# Set development environment
-ENV RAILS_ENV="development" \
-    BUNDLE_WITHOUT="" \
-    BUNDLE_DEPLOYMENT="0" \
-    BUNDLE_PATH="/usr/local/bundle"
+# Default to production-friendly settings; override at runtime if needed
+ENV RAILS_ENV=production \
+    BUNDLE_WITHOUT="development:test" \
+    BUNDLE_DEPLOYMENT=1 \
+    BUNDLE_PATH=/usr/local/bundle
 
 # Update system and install dependencies
 RUN apt-get update -qq && \
@@ -22,16 +22,19 @@ RUN apt-get update -qq && \
 COPY Gemfile Gemfile.lock ./
 
 # Install gems
-RUN bundle install && \
+RUN bundle install --jobs 4 && \
     rm -rf ~/.bundle/ "${BUNDLE_PATH}"/ruby/*/cache "${BUNDLE_PATH}"/ruby/*/bundler/gems/*/.git
 
 # Copy application code
 COPY . .
 
 # Make all scripts executable
-RUN chmod +x /rails/bin/* 
+RUN chmod +x /rails/bin/*
+
+# Precompile assets for production (uses dummy secret key)
+RUN SECRET_KEY_BASE=dummy bundle exec rails assets:precompile
 
 EXPOSE 3000
 
-# Start the server by default
-CMD ["/bin/bash"]
+# Default command: Puma via Rails config
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
