@@ -68,6 +68,13 @@ Status.create(name: "Entregado Proveedor")
 Status.create(name: "Envíado Brevetar") # Ej: Es un ingreso (Renovación, significa que me entrego una documentación) Paso Opcional va en relación con el Usuario Directo
 Status.create(name: "Entregado Cliente")
 
+# Seed Courses (for Primera Vez license procedures)
+Course.create(name: "Curso de Conducción Básico", active: true)
+Course.create(name: "Curso de Conducción Profesional", active: true)
+Course.create(name: "Curso de Conducción Especial", active: true)
+Course.create(name: "Curso de Motocicletas", active: true)
+Course.create(name: "Curso de Vehículos Pesados", active: true)
+
 # Seed Payments
 PaymentType.create(name: "Efectivo")
 PaymentType.create(name: "Transferencia Bancaria")

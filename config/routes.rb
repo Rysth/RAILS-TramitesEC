@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]
+      resources :courses, only: [:index, :show, :create, :update, :destroy]
       resources :procedures do
         get 'generate_excel', on: :collection
       end
