@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine  # Keep version 16 since your data was initialized with it
+    image: postgres:17-alpine  # Matches newer pg_dump custom format used by Dokku export
     container_name: tramites_ec_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: rails_password
       POSTGRES_DB: tramites_ec_development
     ports:
-      - "5432:5432"
+      - "5433:5432"  # Use 5433 on host to avoid conflict with any local Postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rails_user -d tramites_ec_development"]
       interval: 5s
@@ -27,8 +27,12 @@ services:
         rm -f /rails/tmp/pids/server.pid &&
         echo 'Running database migrations...' &&
         bundle exec rails db:migrate &&
-        echo 'Loading seed data...' &&
-        bundle exec rails db:seed &&
+        if [ \"${RUN_SEEDS:-false}\" = \"true\" ]; then
+          echo 'Loading seed data...' &&
+          bundle exec rails db:seed;
+        else
+          echo 'Skipping seeds (set RUN_SEEDS=true to enable)';
+        fi &&
         echo 'Starting Rails server...' &&
         bundle exec rails server -b 0.0.0.0 -p 3000
       "
@@ -41,6 +45,7 @@ services:
     environment:
       RAILS_ENV: development
       DATABASE_URL: "postgresql://rails_user:rails_password@db:5432/tramites_ec_development"
+      RUN_SEEDS: "false"
     depends_on:
       db:
         condition: service_healthy
