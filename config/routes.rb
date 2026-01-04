@@ -5,7 +5,11 @@ Rails.application.routes.draw do
       get 'payment_types/index'
       get 'payment_types/show'
       resources :profiles, only: [:show]
-      resources :users, only: [:index, :show]
+      resources :users, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          patch :update_password
+        end
+      end
       get 'processors/search_processors', to: 'processors#search_processors'
       resources :processors do
         get 'generate_excel', on: :collection
