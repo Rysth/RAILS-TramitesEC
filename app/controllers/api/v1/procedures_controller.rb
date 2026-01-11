@@ -134,7 +134,8 @@ class Api::V1::ProceduresController < ApplicationController
         license: { only: %i[id name] },
         status: { only: %i[id name] },
         agency: { only: %i[id code name has_licenses] },
-        course: { only: %i[id name] }
+        course: { only: %i[id name] },
+        school: { only: %i[id name] }
       },
       methods: [:primera_vez_license?]
     ).merge(
@@ -151,7 +152,7 @@ class Api::V1::ProceduresController < ApplicationController
     puts "hasLicenses param: #{params[:hasLicenses]}"
 
     procedures = Procedure
-      .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier, :agency, :course)
+      .includes(:user, :customer, :processor, :procedure_type, :license, :status, :supplier, :agency, :course, :school)
       .joins(:procedure_type)
       .left_joins(:customer) # Changed to left_joins for optional customers
       .order(id: :desc)
@@ -231,7 +232,7 @@ class Api::V1::ProceduresController < ApplicationController
       :comments, :procedure_type_id, :processor_id, :customer_id,
       :license_id, :supplier_amount, :supplier_id, :status_id,
       :created_at, :agency_id, :code, :date, :is_paid, :active,
-      :user_id, :updated_at, :course_id, :notification_days
+      :user_id, :updated_at, :course_id, :school_id, :notification_days
     )
   end
 

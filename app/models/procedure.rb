@@ -8,6 +8,7 @@ class Procedure < ApplicationRecord
   belongs_to :supplier, optional: true
   belongs_to :agency, optional: true
   belongs_to :course, optional: true
+  belongs_to :school, optional: true
 
   has_many :payments, dependent: :destroy
 

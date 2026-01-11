@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_01_04_210000) do
+ActiveRecord::Schema[7.1].define(version: 2026_01_11_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -139,6 +139,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_04_210000) do
     t.datetime "notification_scheduled_at"
     t.boolean "notification_sent", default: false
     t.datetime "notification_sent_at"
+    t.bigint "school_id"
     t.index ["agency_id"], name: "index_procedures_on_agency_id"
     t.index ["course_id"], name: "index_procedures_on_course_id"
     t.index ["customer_id"], name: "index_procedures_on_customer_id"
@@ -147,6 +148,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_04_210000) do
     t.index ["notification_sent"], name: "index_procedures_on_notification_sent"
     t.index ["procedure_type_id"], name: "index_procedures_on_procedure_type_id"
     t.index ["processor_id"], name: "index_procedures_on_processor_id"
+    t.index ["school_id"], name: "index_procedures_on_school_id"
     t.index ["status_id"], name: "index_procedures_on_status_id"
     t.index ["supplier_id"], name: "index_procedures_on_supplier_id"
     t.index ["user_id"], name: "index_procedures_on_user_id"
@@ -164,6 +166,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_04_210000) do
     t.integer "customers_count", default: 0, null: false
     t.integer "procedures_count", default: 0
     t.index ["user_id"], name: "index_processors_on_user_id"
+  end
+
+  create_table "schools", force: :cascade do |t|
+    t.string "name", null: false
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_schools_on_name", unique: true
   end
 
   create_table "statuses", force: :cascade do |t|
@@ -213,6 +223,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_01_04_210000) do
   add_foreign_key "procedures", "licenses"
   add_foreign_key "procedures", "procedure_types"
   add_foreign_key "procedures", "processors"
+  add_foreign_key "procedures", "schools"
   add_foreign_key "procedures", "statuses"
   add_foreign_key "procedures", "suppliers"
   add_foreign_key "procedures", "users"
