@@ -1,6 +1,7 @@
 class Api::V1::ProcedureTypesController < ApplicationController
   before_action :authenticate_devise_api_token!
   before_action :set_procedure_type, only: %i[show update destroy]
+  before_action :ensure_admin!, only: %i[create update destroy]
 
   def index
     render_procedure_types_response
@@ -29,6 +30,11 @@ class Api::V1::ProcedureTypesController < ApplicationController
   end
 
   def destroy
+    if @procedure_type.procedures.exists?
+      render json: { errors: ['El tipo de trámite tiene trámites asociados y no se puede eliminar.'] }, status: :conflict
+      return
+    end
+
     if @procedure_type.destroy
       render json: { message: 'ProcedureType successfully deleted.' }, status: :ok
     else
@@ -86,6 +92,13 @@ class Api::V1::ProcedureTypesController < ApplicationController
 
   def set_procedure_type
     @procedure_type = ProcedureType.find(params[:id])
+  end
+
+  def ensure_admin!
+    return if current_user&.is_admin
+
+    render json: { errors: ['No autorizado.'] }, status: :forbidden
+    return
   end
 
   def procedure_type_params
