@@ -95,13 +95,14 @@ class Api::V1::ProcedureTypesController < ApplicationController
   end
 
   def ensure_admin!
-    return if current_user&.is_admin
+    return if current_devise_api_user&.is_admin?
 
     render json: { errors: ['No autorizado.'] }, status: :forbidden
     return
   end
 
   def procedure_type_params
-    params.require(:procedure_type).permit(:name, :active, :has_licenses)
+    payload = params[:procedure_type].presence || params
+    payload.permit(:name, :active, :has_licenses)
   end
 end
