@@ -14,10 +14,13 @@ class Api::V1::ProceduresController < ApplicationController
     @procedure = Procedure.new(procedure_params)
     @procedure.user_id = current_devise_api_user.id
 
-    if @procedure.save!
+    if @procedure.save
       render json: procedure_data(@procedure), status: :created
     else
-      render json: @procedure.errors, status: :unprocessable_entity
+      render json: { 
+        errors: @procedure.errors.full_messages,
+        field_errors: @procedure.errors.messages 
+      }, status: :unprocessable_entity
     end
   end
 
@@ -25,7 +28,10 @@ class Api::V1::ProceduresController < ApplicationController
     if @procedure.update(procedure_params)
       render json: procedure_data(@procedure), status: :ok
     else
-      render json: @procedure.errors, status: :unprocessable_entity
+      render json: { 
+        errors: @procedure.errors.full_messages,
+        field_errors: @procedure.errors.messages 
+      }, status: :unprocessable_entity
     end
   end
 
@@ -218,6 +224,12 @@ class Api::V1::ProceduresController < ApplicationController
 
     # ShowUnpaid filter
     procedures = procedures.where(is_paid: false) if params[:showUnpaid].present?
+    
+    # Primera Vez filter - add this section
+    if params[:showPrimeraVez].present?
+      primera_vez_type = ProcedureType.find_by(name: 'Primera Vez')
+      procedures = procedures.where(procedure_type_id: primera_vez_type.id) if primera_vez_type
+    end
 
     puts "Final SQL Test: #{procedures.to_sql}"
     puts "Result count: #{procedures.count}"
