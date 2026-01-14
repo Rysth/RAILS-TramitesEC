@@ -80,9 +80,6 @@ class Api::V1::ProcedureTypesController < ApplicationController
 
     # Filter by archived status
     if params[:show_archived] == 'true'
-      # Show all (including archived)
-      procedure_types = procedure_types
-    elsif params[:archived_only] == 'true'
       # Show only archived
       procedure_types = procedure_types.archived_only
     else
