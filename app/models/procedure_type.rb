@@ -6,6 +6,11 @@ class ProcedureType < ApplicationRecord
   validates :name, presence: true, uniqueness: true
   validates :active, inclusion: { in: [true, false] }
   validates :has_licenses, inclusion: { in: [true, false] }
+  validates :archived, inclusion: { in: [true, false] }
+
+  # Scopes for filtering
+  scope :not_archived, -> { where(archived: false) }
+  scope :archived_only, -> { where(archived: true) }
 
   private
 

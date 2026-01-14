@@ -22,7 +22,12 @@ Rails.application.routes.draw do
       resources :customers do
         get 'generate_excel', on: :collection
       end
-      resources :procedure_types, only: [:index, :show, :create, :update, :destroy]
+      resources :procedure_types, only: [:index, :show, :create, :update, :destroy] do
+        member do
+          patch :toggle_archive
+        end
+        get 'generate_excel', on: :collection
+      end
       resources :license_types, only: [:index]
       resources :licenses, only: [:index]
       resources :statuses, only: [:index]
