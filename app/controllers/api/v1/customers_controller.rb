@@ -68,7 +68,7 @@ class Api::V1::CustomersController < ApplicationController
 
     @customer.user_id = current_devise_api_user.id
 
-    if @customer.save!
+    if @customer.save
       render json: customer_data(@customer), status: :created
     else
       render json: @customer.errors, status: :unprocessable_entity
